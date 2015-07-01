@@ -27,9 +27,12 @@ rm -fr $gitdir/check_upgrade_savepoints.php
 
 # Look for ERROR or WARN in the resultsfile
 count=`grep -P "ERROR|WARN" "$resultfile" | wc -l`
+echo "count=`grep -P \"ERROR|WARN\" \"$resultfile\" | wc -l`"
 # Check if there are problems
 if (($count > 0))
 then
+    echo "Found $count issues with upgrade savepoints, see $resultfile";
+    cat "$resultfile";
     exit 1
 fi
 exit 0

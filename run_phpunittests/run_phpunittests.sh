@@ -1,4 +1,6 @@
 #!/bin/bash
+
+
 # $phpcmd: Path to the PHP CLI executable
 # $psqlcmd: Path to the psql CLI executable
 # $mysqlcmd: Path to the mysql CLI executable
@@ -13,13 +15,19 @@
 #                        raise error or just warning (dlft).
 # $extraconfig: Extra settings that will be injected ti config.php
 
+
+# Include the config file!
+config_file=${JENKINS_HOME}/git_repositories/${config_file}
+. ${config_file}
+
 # Don't be strict. Script has own error control handle
 set +e
 
 # file to capture execution output
-outputfile=${WORKSPACE}/run_phpunittests.out
+mkdir "${WORKSPACE}/${BUILD_NUMBER}"
+outputfile=${WORKSPACE}/${BUILD_NUMBER}/run_phpunittests.out
 # file where results will be sent
-resultfile=${WORKSPACE}/run_phpunittests.xml
+resultfile=${WORKSPACE}/${BUILD_NUMBER}/run_phpunittests.xml
 
 # calculate some variables
 mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -29,6 +37,9 @@ datadirphpunit=/tmp/ci_dataroot_phpunit_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
 
 # prepare the composer stuff needed to run this job
 . ${mydir}/../prepare_composer_stuff/prepare_composer_stuff.sh
+
+# Don't be strict. Script has own error control handle
+set +e
 
 # Going to install the $gitbranch database
 # Create the database
@@ -112,7 +123,8 @@ definedtests=$(grep -r "directory suffix" ${gitdir}/phpunit.xml | sed 's/^[^>]*>
 # Load all the existing tests
 existingtests=$(cd ${gitdir} && find . -name tests | sed 's/^\.\/\(.*\)$/\1/g')
 # Some well-known "tests" that we can ignore here
-ignoretests="local/codechecker/pear/PHP/tests lib/phpexcel/PHPExcel/Shared/JAMA/tests"
+#ignoretests="local/codechecker/pear/PHP/tests lib/phpexcel/PHPExcel/Shared/JAMA/tests"
+ignoretests="local/codechecker/pear/PHP/tests lib/phpexcel/PHPExcel/Shared/JAMA/tests local/codechecker/moodle/tests mod/oucontent/api/tests"
 # Unit test classes to look for with each file (must be 1 and only 1). MDLSITE-2096
 # TODO: Some day replace this with the list of abstract classes, from PHPUnit_Framework_TestCase using some classmap
 unittestclasses="basic_testcase advanced_testcase database_driver_testcase externallib_advanced_testcase data_loading_method_test_base question_testcase question_attempt_upgrader_test_base qbehaviour_walkthrough_test_base grade_base_testcase"

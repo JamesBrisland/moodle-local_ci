@@ -8,6 +8,8 @@
 #
 set -e
 
+latest_stable="${WORKSPACE}/latest_stable.txt"
+
 # Verify everything is set
 required="gitcmd gitdir phpcmd"
 for var in $required; do
@@ -22,7 +24,12 @@ mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 fulllint=0
 
-if [[ -z "${GIT_PREVIOUS_COMMIT}" ]] || [[ -z "${GIT_COMMIT}" ]] ; then
+# Grab the last stable
+if [ -e "$latest_stable" ]; then
+    GIT_STABLE_COMMIT=`cat "$latest_stable"`
+fi
+
+if [[ -z "${GIT_STABLE_COMMIT}" ]] || [[ -z "${GIT_COMMIT}" ]] ; then
     # No git diff information. Lint all php files.
     fulllint=1
 fi
@@ -30,7 +37,7 @@ fi
 if [[ ${fulllint} -ne 1 ]]; then
     # We don't need to do a full lint create the variables required by
     # list_changed_files.sh and invoke it
-    export initialcommit=${GIT_PREVIOUS_COMMIT}
+    export initialcommit=${GIT_STABLE_COMMIT}
     export finalcommit=${GIT_COMMIT}
     if mfiles=$(${mydir}/../list_changed_files/list_changed_files.sh)
     then
@@ -53,27 +60,36 @@ for mfile in ${mfiles} ; do
     if [[ "${mfile}" =~ ".php" ]] ; then
         fullpath=$gitdir/$mfile
 
-        if [ -e $fullpath ] ; then
-            if LINTERRORS=$(($phpcmd -l $fullpath >/dev/null) 2>&1)
-            then
-                echo "$fullpath - OK"
-            else
-                errorfound=1
-                # Filter out the paths from errors:
-                ERRORS=$(echo $LINTERRORS | sed "s#$gitdir##")
-                echo "$fullpath - ERROR: $ERRORS"
-            fi
-            if grep -q $'\xEF\xBB\xBF' $fullpath
-            then
-                echo "$fullpath - ERROR: BOM character found"
-                errorfound=1
-            fi
+        # Ignore some of the fixture files in moodle as they have errors
+        # Ignore a couple of help files with have the BOM in them
+        dir=`dirname "$mfile"`
+        if [ "local/codechecker/moodle/tests/fixtures" = "$dir" ]; then
+            echo "$fullpath - SKIPPED moodle test fixture files"
         else
-            # This is a bit of a hack, we should really be using git to
-            # get actual file contents from the latest commit to avoid
-            # this situation. But in the end we are checking against the
-            # current state of the codebase, so its no bad thing..
-            echo "$fullpath - SKIPPED (file no longer exists)"
+            if [ -e $fullpath ] ; then
+                if LINTERRORS=$(($phpcmd -l $fullpath >/dev/null) 2>&1)
+                then
+                    # We don't care if the file is good... only echo errors.
+                    #echo "$fullpath - OK"
+                    echo -n
+                else
+                    errorfound=1
+                    # Filter out the paths from errors:
+                    ERRORS=$(echo $LINTERRORS | sed "s#$gitdir##")x
+                    echo "$fullpath - ERROR: $ERRORS"
+                fi
+                if grep -q $'\xEF\xBB\xBF' $fullpath
+                then
+                    echo "$fullpath - ERROR: BOM character found"
+                    errorfound=1
+                fi
+            else
+                # This is a bit of a hack, we should really be using git to
+                # get actual file contents from the latest commit to avoid
+                # this situation. But in the end we are checking against the
+                # current state of the codebase, so its no bad thing..
+                echo -e "\n$fullpath - SKIPPED (file no longer exists)"
+            fi
         fi
     fi
 done
@@ -81,6 +97,8 @@ done
 if [[ ${errorfound} -eq 0 ]]; then
     # No syntax errors found, all good.
     echo "No PHP syntax errors found"
+    # Log this git commit as latest stable
+    echo $GIT_COMMIT > "$latest_stable"
     exit 0
 fi
 

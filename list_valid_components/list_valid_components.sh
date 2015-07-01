@@ -53,8 +53,16 @@ datadir=/tmp/ci_dataroot_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
 dbprefixinstall="cii_"
 
 # Create the database to install
-# TODO: Based on $dbtype, execute different DB creation commands
-${mysqlcmd} --user=$dbuser --password=$dbpass --host=$dbhost --execute="CREATE DATABASE $installdb CHARACTER SET utf8 COLLATE utf8_bin"
+if [[ "${dbtype}" == "pgsql" ]]; then
+    export PGPASSWORD=${dbpass}
+    ${psqlcmd} -h $dbhost -U $dbuser -d template1 -c "CREATE DATABASE $upgradedb ENCODING 'utf8'"
+elif [[ "${dbtype}" == "mysqli" ]]; then
+    ${mysqlcmd} --user=$dbuser --password=$dbpass --host=$dbhost --execute="CREATE DATABASE $installdb CHARACTER SET utf8 COLLATE utf8_bin"
+else
+    echo "Error: Incorrect dbtype=${dbtype}"
+    exit 1
+fi
+
 # Error creating DB, we cannot continue. Exit
 exitstatus=${PIPESTATUS[0]}
 if [ $exitstatus -ne 0 ]; then
@@ -83,9 +91,19 @@ if [ $exitstatus -eq 0 ]; then
 fi
 
 # Drop the databases and delete files
-# TODO: Based on $dbtype, execute different DB deletion commands
-${mysqlcmd} --user=${dbuser} --password=${dbpass} --host=${dbhost} \
-        --execute="DROP DATABASE ${installdb}"
+echo "Dropping DBs"
+if [[ "${dbtype}" == "pgsql" ]]; then
+    export PGPASSWORD=${dbpass1}
+    export PGPASSWORD=${dbpass1}
+    ${psqlcmd} -h $dbhost1 -U $dbuser1 -d template1 -c "DROP DATABASE ${installdb}"
+    export PGPASSWORD=${dbpass2}
+    ${psqlcmd} -h $dbhost2 -U $dbuser2 -d template1 -c "DROP DATABASE ${upgradedb}"
+elif [[ "${dbtype}" == "mysqli" ]]; then
+    ${mysqlcmd} --user=${dbuser} --password=${dbpass} --host=${dbhost} --execute="DROP DATABASE ${installdb}"
+else
+    echo "Error: Incorrect dbtype=${dbtype}"
+    exit 1
+fi
 rm -fr ${gitdir}/local/ci
 rm -fr ${gitdir}/config.php
 rm -fr ${datadir}

@@ -20,6 +20,11 @@ cd $gitdir && git reset --hard $gitbranch
 
 # Search and send to $lastfile
 echo -n > "$lastfile"
+
+# Fix for files with whitespaces in the names
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
 for i in `find . -type f`
 do
     if [[ $i =~ $exclude ]]
@@ -34,6 +39,8 @@ do
         echo "$content" >> "$lastfile"
     fi
 done
+
+IFS=$SAVEIFS
 
 # Get the count from the previous execution
 prevcount=999999

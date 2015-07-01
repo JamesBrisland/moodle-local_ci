@@ -41,8 +41,17 @@ fi
 
 # Going to install the $gitbranchinstalled database
 # Create the database to install
-# TODO: Based on $dbtype, execute different DB creation commands
-${mysqlcmd} --user=$dbuser1 --password=$dbpass1 --host=$dbhost1 --execute="CREATE DATABASE $installdb CHARACTER SET utf8 COLLATE utf8_bin"
+echo "Creating database $installdb";
+if [[ "${dbtype}" == "pgsql" ]]; then
+    export PGPASSWORD=${dbpass1}
+    ${psqlcmd} -h $dbhost1 -U $dbuser1 -d template1 -c "CREATE DATABASE $installdb ENCODING 'utf8'"
+elif [[ "${dbtype}" == "mysqli" ]]; then
+    ${mysqlcmd} --user=$dbuser1 --password=$dbpass1 --host=$dbhost1 --execute="CREATE DATABASE $installdb CHARACTER SET utf8 COLLATE utf8_bin"
+else
+    echo "Error: Incorrect dbtype=${dbtype}"
+    exit 1
+fi
+
 # Error creating DB, we cannot continue. Exit
 exitstatus=${PIPESTATUS[0]}
 if [ $exitstatus -ne 0 ]; then
@@ -51,8 +60,17 @@ if [ $exitstatus -ne 0 ]; then
 fi
 
 # Create the database to upgrade
-# TODO: Based on $dbtype, execute different DB creation commands
-${mysqlcmd} --user=$dbuser1 --password=$dbpass1 --host=$dbhost1 --execute="CREATE DATABASE $upgradedb CHARACTER SET utf8 COLLATE utf8_bin"
+echo "Creating database $upgradedb";
+if [[ "${dbtype}" == "pgsql" ]]; then
+    export PGPASSWORD=${dbpass2}
+    ${psqlcmd} -h $dbhost2 -U $dbuser2 -d template1 -c "CREATE DATABASE $upgradedb ENCODING 'utf8'"
+elif [[ "${dbtype}" == "mysqli" ]]; then
+    ${mysqlcmd} --user=$dbuser2 --password=$dbpass2 --host=$dbhost2 --execute="CREATE DATABASE $upgradedb CHARACTER SET utf8 COLLATE utf8_bin"
+else
+    echo "Error: Incorrect dbtype=${dbtype}"
+    exit 1
+fi
+
 # Error creating DB, we cannot continue. Exit
 exitstatus=${PIPESTATUS[0]}
 if [ $exitstatus -ne 0 ]; then
@@ -61,6 +79,7 @@ if [ $exitstatus -ne 0 ]; then
 fi
 
 # Do the moodle install of $installdb
+echo "Resetting and installing git branch $gitbranchinstalled";
 cd $gitdir && git reset --hard $gitbranchinstalled
 rm -fr config.php
 ${phpcmd} admin/cli/install.php --non-interactive --allow-unstable --agree-license --wwwroot="http://localhost" --dataroot="$datadir" --dbtype=$dbtype --dbhost=$dbhost1 --dbname=$installdb --dbuser=$dbuser1 --dbpass=$dbpass1 --prefix=$dbprefixinstall --fullname=$installdb --shortname=$installdb --adminuser=$dbuser1 --adminpass=$dbpass1
@@ -69,6 +88,7 @@ exitstatus=${PIPESTATUS[0]}
 if [ $exitstatus -ne 0 ]; then
     echo "Error installing $gitbranchinstalled to test upgrade"
 fi
+    echo "DONE: Resetting and installing git branch $gitbranchinstalled";
 
 # Going to install and upgrade the $gitbranchupgraded database
 
@@ -76,6 +96,7 @@ fi
 # only if we don't come from an erroneus previous situation
 if [ $exitstatus -eq 0 ]; then
     # Detached head, good enough
+    echo "Resetting and installing git branch $gitbranchupgraded";
     cd $gitdir && git checkout origin/$gitbranchupgraded
     rm -fr config.php
     ${phpcmd} admin/cli/install.php --non-interactive --allow-unstable --agree-license --wwwroot="http://localhost" --dataroot="$datadir" --dbtype=$dbtype --dbhost=$dbhost2 --dbname=$upgradedb --dbuser=$dbuser2 --dbpass=$dbpass2 --prefix=$dbprefixupgrade --fullname=$upgradedb --shortname=$upgradedb --adminuser=$dbuser2 --adminpass=$dbpass2
@@ -84,34 +105,53 @@ if [ $exitstatus -eq 0 ]; then
     if [ $exitstatus -ne 0 ]; then
         echo "Error installing $gitbranchupgraded to test upgrade"
     fi
+    echo "DONE: Resetting and installing git branch $gitbranchupgraded";
 fi
 
 # Do the moodle upgrade
 # only if we don't come from an erroneus previous situation
 if [ $exitstatus -eq 0 ]; then
     # Need to checkout back to gitbranchinstalled from detached gitbranchupgraded
+    echo "Resetting and UPGRADING from $gitbranchupgraded to $gitbranchinstalled";
     cd $gitdir && git checkout $gitbranchinstalled && git reset --hard $gitbranchinstalled
+
+    ###################### TEMP HACK ######################
+    # Change version in quiz so upgrade doesn't fail... issue with something cherrypicked into ouvle_424 and not ouvle
+    #sed -i 's/2014111000/2014111002/g' /var/lib/jenkins/git_repositories/OUVLE/ouvle/mod/quiz/version.php
+    ###################### TEMP HACK ######################
+
     ${phpcmd} admin/cli/upgrade.php --non-interactive --allow-unstable
     # Error upgrading, inform and continue
     exitstatus=${PIPESTATUS[0]}
     if [ $exitstatus -ne 0 ]; then
         echo "Error upgrading from $gitbranchupgraded to $gitbranchinstalled"
     fi
+    echo "DONE: Resetting and UPGRADING from $gitbranchupgraded to $gitbranchinstalled";
 fi
 
 # Run the DB compare utility, saving results to file
 # only if we don't come from an erroneus situation on upgrade
 if [ $exitstatus -eq 0 ]; then
-    ${phpcmd} $mydir/compare_databases.php --dblibrary=$dblibrary --dbtype=$dbtype --dbhost1=$dbhost1 --dbname1=$installdb --dbuser1=$dbuser1 --dbpass1=$dbpass1 --dbprefix1=$dbprefixinstall --dbhost1=$dbhost1 --dbname2=$upgradedb --dbuser2=$dbuser2 --dbpass2=$dbpass2 --dbprefix2=$dbprefixupgrade > "$resultfile"
+    ${phpcmd} $mydir/compare_databases.php --dblibrary=$dblibrary --dbtype=$dbtype --dbhost1=$dbhost1 --dbname1=$installdb --dbuser1=$dbuser1 --dbpass1=$dbpass1 --dbprefix1=$dbprefixinstall --dbhost2=$dbhost2 --dbname2=$upgradedb --dbuser2=$dbuser2 --dbpass2=$dbpass2 --dbprefix2=$dbprefixupgrade > "$resultfile"
     exitstatus=${PIPESTATUS[0]}
 fi
 
 # Drop the databases and delete files
-# TODO: Based on $dbtype, execute different DB deletion commands
-${mysqlcmd} --user=${dbuser1} --password=${dbpass1} --host=${dbhost1} \
-        --execute="DROP DATABASE ${installdb}"
-${mysqlcmd} --user=${dbuser2} --password=${dbpass2} --host=${dbhost2} \
-        --execute="DROP DATABASE ${upgradedb}"
+echo "Dropping DBs"
+if [[ "${dbtype}" == "pgsql" ]]; then
+    export PGPASSWORD=${dbpass1}
+    export PGPASSWORD=${dbpass1}
+    ${psqlcmd} -h $dbhost1 -U $dbuser1 -d template1 -c "DROP DATABASE ${installdb}"
+    export PGPASSWORD=${dbpass2}
+    ${psqlcmd} -h $dbhost2 -U $dbuser2 -d template1 -c "DROP DATABASE ${upgradedb}"
+elif [[ "${dbtype}" == "mysqli" ]]; then
+    ${mysqlcmd} --user=${dbuser1} --password=${dbpass1} --host=${dbhost1} --execute="DROP DATABASE ${installdb}"
+    ${mysqlcmd} --user=${dbuser2} --password=${dbpass2} --host=${dbhost2} --execute="DROP DATABASE ${upgradedb}"
+else
+    echo "Error: Incorrect dbtype=${dbtype}"
+    exit 1
+fi
+
 rm -fr config.php
 rm -fr $datadir
 

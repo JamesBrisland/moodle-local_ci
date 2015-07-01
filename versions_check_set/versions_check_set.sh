@@ -25,11 +25,20 @@ versionregex="^([0-9]{10}(\.[0-9]{2})?)$"
 resultfile=${WORKSPACE}/versions_check_set.txt
 echo -n > "${resultfile}"
 
+error_messages=""
+error_message=""
+function write_and_store_error {
+    echo "  $1" >> "${resultfile}"
+    error_message="$error_message\n$1";
+}
+
 # First of all, guess the current branch from main version.php file ($branch). We'll be using
 # it to decide about different checks later.
 currentbranch="$( grep "\$branch.*=.*;" "${gitdir}/version.php" || true )"
 if [ -z "${currentbranch}" ]; then
-    echo "+ ERROR: Main version.php file is missing: \$branch = 'xx' line." >> "${resultfile}"
+    msg = "+ ERROR: Main version.php file is missing: \$branch = 'xx' line.";
+    echo $msg >> "${resultfile}"
+    error_messages="$msg\n\n"
 elif [[ ${currentbranch} =~ branch\ *=\ *.([0-9]{2,3}).\; ]]; then
     currentbranch=${BASH_REMATCH[1]}
     echo "+ INFO: Correct main version.php branch found: ${currentbranch}" >> "${resultfile}"
@@ -45,7 +54,7 @@ fi
 #    path (full or null)
 ${mydir}/../list_valid_components/list_valid_components.sh > "${WORKSPACE}/valid_components.txt"
 
-# Find all the version.php files
+# Find all the version.php files and sort into depth order
 allfiles=$( find "${gitdir}" -name version.php | awk -F "/" '{print NF-1"\t"$0}' | sort -n | cut -f 2- )
 
 # version.php files to ignore
@@ -53,6 +62,7 @@ ignorefiles="(local/(ci|codechecker|moodlecheck)/version.php|.*/tests/fixtures/.
 
 # Perform various checks with the version.php files
 for i in ${allfiles}; do
+    error_message=""
     # Exclude the version.php if matches ignorefiles
     if [[ "${i}" =~ ${gitdir}/${ignorefiles} ]]; then
         echo "- ${i}: Ignored (ignored files)"  >> "${resultfile}"
@@ -81,13 +91,13 @@ for i in ${allfiles}; do
     # Verify the file has MOODLE_INTERNAL check
     internal="$( grep 'defined.*MOODLE_INTERNAL.*die.*;$' ${i} || true )"
     if [ -z "${internal}" ]; then
-        echo "  + ERROR: File is missing: defined('MOODLE_INTERNAL') || die(); line." >> "${resultfile}"
+        write_and_store_error "  + ERROR: File is missing: defined('MOODLE_INTERNAL') || die(); line."
     fi
 
     # Verify the file has version defined
     version="$( grep -P "${prefix}version.*=.*;" ${i} || true )"
     if [ -z "${version}" ]; then
-        echo "  + ERROR: File is missing: ${prefix}version = 'xxxxxx' line." >> "${resultfile}"
+        write_and_store_error "  + ERROR: File is missing: ${prefix}version = 'xxxxxx' line."
     fi
 
     # Verify the version looks correct (10 digit + optional 2) (only if we have version)
@@ -98,7 +108,7 @@ for i in ${allfiles}; do
             echo "  + INFO: Correct version found: ${version}" >> "${resultfile}"
         else
             version=""
-            echo "  + ERROR: No correct version (10 digits + opt 2 more) found" >> "${resultfile}"
+            write_and_store_error "  + ERROR: No correct version (10 digits + opt 2 more) found"
         fi
     fi
 
@@ -106,7 +116,7 @@ for i in ${allfiles}; do
     if [ ! -z "${version}" ] && [[ ${i} =~ /(mod|blocks)/[^/]*/version.php ]]; then
         # Extract the version
         if [[ ${version} =~ [0-9]{10}\.[0-9] ]]; then
-            echo "  + ERROR: Activity and block versions cannot have decimal part" >> "${resultfile}"
+            write_and_store_error "  + ERROR: Activity and block versions cannot have decimal part"
         else
             echo "  + INFO: Correct mod and blocks version has no decimals" >> "${resultfile}"
         fi
@@ -118,44 +128,44 @@ for i in ${allfiles}; do
 
         mainrelease="$( grep "${prefix}release.*=.*;" ${i} || true )"
         if [ -z "${mainrelease}" ]; then
-            echo "  + ERROR: File is missing: ${prefix}release = 'xxxxxx' line." >> "${resultfile}"
+            write_and_store_error "  + ERROR: File is missing: ${prefix}release = 'xxxxxx' line."
         fi
         if [[ ${mainrelease} =~ release\ *=\ *.([0-9]\.[0-9]{1,2}(\.[0-9]{1,2})?)[^0-9].*\(Build:\ *[0-9]{8}\).\; ]]; then
             mainrelease=${BASH_REMATCH[1]}
             echo "  + INFO: Correct release found: ${mainrelease}" >> "${resultfile}"
         else
             mainrelease=""
-            echo "  + ERROR: No correct version 'X.YY[+|beta|rc] (Build: YYYYMMDD)' found" >> "${resultfile}"
+            write_and_store_error "  + ERROR: No correct version 'X.YY[+|beta|rc] (Build: YYYYMMDD)' found"
         fi
 
         mainbranch="$( grep "${prefix}branch.*=.*;" ${i} || true )"
         if [ -z "${mainbranch}" ]; then
-            echo "  + ERROR: File is missing: ${prefix}branch = 'xx' line." >> "${resultfile}"
+            write_and_store_error "  + ERROR: File is missing: ${prefix}branch = 'xx' line." >> "${resultfile}"
         fi
         if [[ ${mainbranch} =~ branch\ *=\ *.([0-9]{2,3}).\; ]]; then
             mainbranch=${BASH_REMATCH[1]}
             echo "  + INFO: Correct branch found: ${mainbranch}" >> "${resultfile}"
         else
             mainbranch=""
-            echo "  + ERROR: No correct branch 'XY[Z]' found" >> "${resultfile}"
+            write_and_store_error "  + ERROR: No correct branch 'XY[Z]' found"
         fi
 
         mainmaturity="$( grep "${prefix}maturity.*=.*;" ${i} || true )"
         if [ -z "${mainmaturity}" ]; then
-            echo "  + ERROR: File is missing: ${prefix}maturity = MATURITY_XXX line." >> "${resultfile}"
+            write_and_store_error "  + ERROR: File is missing: ${prefix}maturity = MATURITY_XXX line."
         fi
         if [[ ${mainmaturity} =~ maturity\ *=\ *(MATURITY_(ALPHA|BETA|RC|STABLE))\; ]]; then
             mainmaturity=${BASH_REMATCH[1]}
             echo "  + INFO: Correct mainmaturity found: ${mainmaturity}" >> "${resultfile}"
         else
             mainmaturity=""
-            echo "  + ERROR: No correct mainmaturity MATURITY_XXXX found" >> "${resultfile}"
+            write_and_store_error "  + ERROR: No correct mainmaturity MATURITY_XXXX found"
         fi
 
         # Verify branch matches normalised release
         normalisedrelease=${mainrelease/\./}
         if [[ ! ${normalisedrelease} =~ ${mainbranch} ]]; then
-            echo "  + ERROR: Branch ${mainbranch} does not match release ${mainrelease}"  >> "${resultfile}"
+            write_and_store_error "  + ERROR: Branch ${mainbranch} does not match release ${mainrelease}"
         else
             echo "  + INFO: Branch ${mainbranch} matches release ${mainrelease}"  >> "${resultfile}"
         fi
@@ -168,9 +178,8 @@ for i in ${allfiles}; do
     # Verify the file has requires defined
     requires="$( grep -P "${prefix}requires.*=.*;" ${i} || true )"
     if [ -z "${requires}" ]; then
-        echo "  + ERROR: File is missing: ${prefix}requires = 'xxxxxx' line." >> "${resultfile}"
+        write_and_store_error "  + ERROR: File is missing: ${prefix}requires = 'xxxxxx' line."
     fi
-
     # Verify the requires looks correct (10 digit + optional 2) (only if we have requires)
     if [ ! -z "${requires}" ]; then
         # Extract the requires
@@ -179,27 +188,31 @@ for i in ${allfiles}; do
             echo "  + INFO: Correct requires found: ${requires}" >> "${resultfile}"
         else
             requires=""
-            echo "  + ERROR: No correct requires (10 digits + opt 2 more) found" >> "${resultfile}"
+            write_and_store_error "  + ERROR: No correct requires (10 digits + opt 2 more) found"
         fi
     fi
-
     # Verify the requires is <= main version
     if [ -z "${mainversion}" ]; then
-        echo "  + ERROR: Processing requires before knowing about main version." >> "${resultfile}"
+        write_and_store_error "  + ERROR: Processing requires before knowing about main version."
     else
         # Float comparison
-        satisfied=$( echo "${requires} <= ${mainversion}" | bc )
+        if [ ! -z "${requires}" ]; then
+            satisfied=$( echo "${requires} <= ${mainversion}" | bc )
+        else
+            satisfied=0
+        fi
+
         if [ "${satisfied}" != "0" ]; then
             echo "  + INFO: Requires ${requires} satisfies main version." >> "${resultfile}"
         else
-            echo "  + ERROR: Requires ${requires} does not satisfy main version ${mainversion}." >> "${resultfile}"
+            write_and_store_error "  + ERROR: Requires ${requires} does not satisfy main version ${mainversion}."
         fi
     fi
 
     # Verify the file has component defined
     component="$( grep -P "${prefix}component.*=.*'.*';" ${i} || true )"
     if [ -z "${component}" ]; then
-        echo "  + ERROR: File is missing: ${prefix}component = 'xxxxxx' line." >> "${resultfile}"
+        write_and_store_error "  + ERROR: File is missing: ${prefix}component = 'xxxxxx' line."
     fi
 
     # Verify the component is a correct one for the given dir (only if we have component)
@@ -212,10 +225,10 @@ for i in ${allfiles}; do
             directory=$( dirname ${i} )
             validdirectory=$( grep "plugin,${component},${directory}" "${WORKSPACE}/valid_components.txt" || true )
             if [ -z "${validdirectory}" ]; then
-                echo "  + ERROR: Component ${component} not valid for that file" >> "${resultfile}"
+                write_and_store_error "  + ERROR: Component ${component} not valid for that file"
             fi
         else
-            echo "  + ERROR: No correct component found" >> "${resultfile}"
+            write_and_store_error "  + ERROR: No correct component found"
         fi
     fi
 
@@ -228,7 +241,7 @@ for i in ${allfiles}; do
             maturity=${BASH_REMATCH[1]}
             # Check it matches one valid maturity
             if [[ ! ${maturity} =~ MATURITY_(ALPHA|BETA|RC|STABLE) ]]; then
-                echo "  + ERROR: Maturity ${maturity} not valid" >> "${resultfile}"
+                write_and_store_error "  + ERROR: Maturity ${maturity} not valid"
             elif [ "${maturity}" != "MATURITY_STABLE" ]; then
                 echo "  + WARN: Maturity ${maturity} not ideal for this core plugin" >> "${resultfile}"
             fi
@@ -245,7 +258,7 @@ for i in ${allfiles}; do
         echo "  + INFO: Dependencies found" >> "${resultfile}"
         # Extract the dependencies
         if [[ ! "${dependencies}" =~ dependencies=array\((.*)\)\; ]]; then
-            echo "  + ERROR: Dependencies format does not seem correct" >> "${resultfile}"
+            write_and_store_error "  + ERROR: Dependencies format does not seem correct"
         else
             dependencies="$( echo ${BASH_REMATCH[1]} | sed -e 's/,$//g' )"
         fi
@@ -254,32 +267,36 @@ for i in ${allfiles}; do
             echo "  + INFO: Analising dependency: ${dependency}" >> "${resultfile}"
             # Split dependency by '=>'
             if [[ ! ${dependency} =~ (.*)=\>(.*) ]]; then
-                echo "  + ERROR: Incorrect dependency format: ${dependency}" >> "${resultfile}"
+                write_and_store_error "  + ERROR: Incorrect dependency format: ${dependency}"
             fi
             # Validate component and version
             component=${BASH_REMATCH[1]}
             version=${BASH_REMATCH[2]}
             validcomponent=$( grep "plugin,${component}," "${WORKSPACE}/valid_components.txt" || true )
             if [ -z "${validcomponent}" ]; then
-                echo "  + ERROR: Component ${component} not valid" >> "${resultfile}"
+                write_and_store_error "  + ERROR: Component ${component} not valid"
             fi
             if [[ ! "${version}" =~ ${versionregex} ]]; then
-                echo "  + ERROR: Version ${version} not valid" >> "${resultfile}"
+                write_and_store_error "  + ERROR: Version ${version} not valid"
             fi
         done
     fi
 
     # Look for all defined attributes and validate all them are valid
-    validattrs="version|release|requires|component|dependencies|cron|maturity"
+    validattrs="version|release|requires|component|dependencies|cron|maturity|outestssufficient"
     grep -P "^${prefix}[a-z]* *=.*;" ${i} | while read attr; do
         # Extract the attribute
         [[ "${attr}" =~ [^a-z]([a-z]*)\ *=.*\; ]]
         attr=${BASH_REMATCH[1]}
         # Validate and extract attribute
         if [[ ! "${attr}" =~ ^(${validattrs})$ ]]; then
-            echo "  + ERROR: Attribute ${attr} is not allowed in version.php files" >> "${resultfile}"
+            write_and_store_error "  + ERROR: Attribute ${attr} is not allowed in version.php files"
         fi
     done
+
+    if [ ! -z "$error_message" ]; then
+       error_messages="${error_messages}File: ${i}\nErrors: ${error_message}\n\n";
+    fi
 done
 
 # Now, look for backup/backup.class.php to ensure it matches main /version.php
@@ -299,21 +316,25 @@ else
         backupversion=""
         echo "  + ERROR: No correct backup version YYYYYMMDDZZ found" >> "${resultfile}"
     fi
+
     # But this only applies to STABLE branches, let's try to get current one
-    gitbranch=$( basename $( cd "${gitdir}" && git symbolic-ref -q HEAD ) )
-    if [[ ${gitbranch} =~ MOODLE_[0-9]*_STABLE ]]; then
-        cutmainversion=$( echo ${mainversion} | cut -c -8 )
-        cutbackupversion=$( echo ${backupversion} | cut -c -8 )
-        # Integer comparison (give it 15 days before start failing and requiring to adjust stable backup version)
-        satisfied=$( echo "(${cutbackupversion} + 15 ) >= ${cutmainversion}" | bc )
-        if [ "${satisfied}" != "0" ]; then
-            echo "  + INFO: Backup version ${cutbackupversion} satisfies main version." >> "${resultfile}"
+    # TODO. Impliment stable check as we won't be running this on a moodle stable branch
+    #if [ $dont_do_stable_check ]
+        gitbranch=$( basename $( cd "${gitdir}" && git symbolic-ref -q HEAD ) )
+        if [[ ${gitbranch} =~ MOODLE_[0-9]*_STABLE ]]; then
+            cutmainversion=$( echo ${mainversion} | cut -c -8 )
+            cutbackupversion=$( echo ${backupversion} | cut -c -8 )
+            # Integer comparison (give it 15 days before start failing and requiring to adjust stable backup version)
+            satisfied=$( echo "(${cutbackupversion} + 15 ) >= ${cutmainversion}" | bc )
+            if [ "${satisfied}" != "0" ]; then
+                echo "  + INFO: Backup version ${cutbackupversion} satisfies main version." >> "${resultfile}"
+            else
+                echo "  + ERROR: Backup version ${cutbackupversion} does not satisfy main version ${cutmainversion}." >> "${resultfile}"
+            fi
         else
-            echo "  + ERROR: Backup version ${cutbackupversion} does not satisfy main version ${cutmainversion}." >> "${resultfile}"
+            echo "  + INFO: Detected git branch ${gitbranch}. Skipping the backup version verification." >> "${resultfile}"
         fi
-    else
-        echo "  + INFO: Detected git branch ${gitbranch}. Skipping the backup version verification." >> "${resultfile}"
-    fi
+    #fi
 
     # - backup::RELEASE must match $release (X.Y only)
     backuprelease="$( grep "const.*RELEASE.*=.*;" "${gitdir}/backup/backup.class.php" || true )"
@@ -390,6 +411,8 @@ fi
 count=`grep -P "ERROR:" "$resultfile" | wc -l`
 if (($count > 0))
 then
+    echo "$count errors";
+    echo -e "$error_messages"
     exit 1
 fi
 exit 0

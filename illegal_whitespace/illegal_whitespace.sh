@@ -16,23 +16,33 @@ countfile=$WORKSPACE/illegal_whitespace_counters_$gitbranch.csv
 mincountfile=$WORKSPACE/illegal_whitespace_mincounter_$gitbranch.csv
 
 # Co to proper gitdir and gitpath
+echo "Git DIR: $gitdir"
+echo "Git branch: $gitbranch"
+echo "Lastfile: $lastfile"
 cd $gitdir && git reset --hard $gitbranch
 
 # Search and send to $lastfile
 echo -n > "$lastfile"
+
+# Allows the for loop to handle files with whitespaces in their names
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
 for i in `find . -type f`
 do
     if [[ $i =~ $excluded_grep ]]
     then
         continue
     fi
-    content=`grep -PIn '^[ \t]+$|^ *\t *.+$|^.*[ \t]+$' ${i}`
+    content=`grep -PIn '^[ \t]+$|^ *\t *.+$|^.*[ \t\n]+$' "${i}"`
     if [ ! -z "$content" ]
     then
         echo "## $i ##" >> "$lastfile"
         echo "$content" >> "$lastfile"
     fi
 done
+
+IFS=$SAVEIFS
 
 # Get the count from the previous execution
 prevcount=999999

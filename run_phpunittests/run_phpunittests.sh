@@ -17,7 +17,8 @@
 
 
 # Include the config file!
-config_file=${JENKINS_HOME}/git_repositories/${config_file}
+config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_number}_${config_file}
+echo Config file: ${config_file}
 . ${config_file}
 
 # Don't be strict. Script has own error control handle

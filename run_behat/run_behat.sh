@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Include the config file!
-config_file=${JENKINS_HOME}/git_repositories/${config_file}
+config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_number}_${config_file}
+echo Config File: ${config_file}
 . ${config_file}
 
 # Don't be strict. Script has own error control handle
@@ -11,8 +12,8 @@ set +e
 mkdir "${WORKSPACE}/${BUILD_NUMBER}"
 composer_init_output=${WORKSPACE}/${BUILD_NUMBER}/composer_init.txt
 behat_init_output=${WORKSPACE}/${BUILD_NUMBER}/behat_init.txt
-behat_pretty_output=${WORKSPACE}/${BUILD_NUMBER}/behat_pretty.txt
-xvfb_output=${WORKSPACE}/${BUILD_NUMBER}/xvfb.txt
+behat_pretty_full_output=${WORKSPACE}/${BUILD_NUMBER}/behat_pretty_full.txt
+behat_pretty_moodle_output=${WORKSPACE}/${BUILD_NUMBER}/behat_pretty_moodle.txt
 selenium_output=${WORKSPACE}/${BUILD_NUMBER}/selenium.txt
 
 # file where results will be sent
@@ -69,8 +70,8 @@ replacements="%%DBLIBRARY%%#${dblibrary}
 %%DATADIR%%#${datadir}
 %%DATADIRBEHAT%%#${datadirbehat}
 %%BEHATPREFIX%%#${behatprefix}
-%%BEHATURL%%#${behaturl}
-%%MOODLEURL%%#${moodleurl}
+%%BEHATURL%%#${behaturl}/jenkins_${BUILD_NUMBER}
+%%MOODLEURL%%#${moodleurl}/jenkins_${BUILD_NUMBER}
 %%BEHATFAILDUMP%%#${behatfaildump}
 %%TIMEZONE%%#${timezone}
 "
@@ -107,16 +108,12 @@ if [ $exitstatus -eq 0 ]; then
     echo Datadir in ${datadirbehat}
     echo Behat init output: ${behat_init_output}
     echo Behat pretty output: ${behat_pretty_output}
-    echo Xvfb output: ${xvfb_output}
     echo Selenium output: ${selenium_output}
     echo -e "\n\n---------------------------------------------------------------\n\n"
     date
     echo -e "\n\n---------------------------------------------------------------\n\n"
-    echo "Launching Xvfb on :99 and sleeping for 2 seconds to allow time for launch"
-    Xvfb :99 -ac -screen 0 1280x1024x24 > "${xvfb_output}" 2>&1 &
-    sleep 2
-    echo "Setting display to use :99"
-    export DISPLAY=:99
+    echo "Setup apache www folder /var/www/html/jenkins_${BUILD_NUMBER}"
+    ln -s ${gitdir} /var/www/html/jenkins_${BUILD_NUMBER}
     echo "Launching Selenium and sleeping for 2 seconds to allow time for launch"
     /opt/selenium/selenium.sh > "${selenium_output}" 2>&1 &
     sleep 2
@@ -126,8 +123,23 @@ if [ $exitstatus -eq 0 ]; then
     unset no_proxy
     echo "Unsetting proxy as it's not needed when runnig behat tests locally. Moodle config has proxy settings in for anything Moodle does."
     echo -e "\n\n---------------------------------------------------------------\n\n"
-    set +e
-    ${gitdir}/vendor/bin/behat -vvv --config "${datadirbehat}/behat/behat.yml" --format moodle_progress,pretty,junit --out=,"${behat_pretty_output}","${junit_output_folder}" --tags=mod_oucontent,format_studyplan,mod_forumng,mod_subpage,block_course_resources,block_studenthome_assessment,block_otherformats,block_news,block_resources_search,mod_quiz
+
+    # Setup the tags
+    if [ "${behat_do_full_run}" = "yes" ]; then
+        tags=${behat_tags_full_run}
+    else
+        tags=${behat_tags_partial_run}
+    fi
+
+    # Check to see if we have an override
+    if [ ! -z "${behat_tags_override}" -a "${behat_tags_override}" != " " ]; then
+        tags=${behat_tags_full_run}
+    fi
+
+    echo Execuiting tags ${tags}
+
+    # This will output the moodle_progress format to the console and write moodle_progress, behat pretty and junit formats to files
+    ${gitdir}/vendor/bin/behat -v --config "${datadirbehat}/behat/behat.yml" --format moodle_progress,moodle_progress,pretty,junit --out=,"${behat_pretty_moodle_output}","${behat_pretty_full_output}","${junit_output_folder}" --tags=${tags} --profile=chrome
     exitstatus=${PIPESTATUS[0]}
     echo "Behat finished. Exit status ${exitstatus}"
 fi
@@ -190,10 +202,15 @@ else
     echo "Error: Incorrect dbtype=${dbtype}"
     exit 1
 fi
+
+cp "${behatfaildump}/*" "${WORKSPACE}/${BUILD_NUMBER}"
 #rm -fr config.php
-#rm -fr $gitdir/local/ci
-#rm -fr ${datadir}
-#rm -fr ${datadirbehat}
+rm -fr ${datadir}
+rm -fr ${datadirbehat}
+
+if [ ${exitstatus} -ne 0 ]
+    # There has been some errors. Process them
+fi
 
 # If arrived here, return the exitstatus of the php execution
 exit $exitstatus

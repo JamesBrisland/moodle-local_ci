@@ -5,14 +5,19 @@ set +e
 # Get all the current vars available to bash and look for the jenkins_ ones
 jenkins_vars=$(( set -o posix ; set ) | grep ".*jenkins_.*" )
 
-config_file=${JENKINS_HOME}/git_repositories/${config_file}
-echo Config file: $config_file
+mkdir ${JENKINS_HOME}/git_repositories/config_files;
+config_file=${JENKINS_HOME}/git_repositories/config_files/${BUILD_NUMBER}_${config_file}
+echo Config File: ${config_file}
 
 # Delete the config file and create a new one
 rm -f $config_file
 touch $config_file
 
 # Setup the proxy in the config file
+current_date=`date`
+echo "#################################################################################################################" >> $config_file
+echo "# ${current_date} : Setup Config Script Build Number ${BUILD_NUMBER}" >> $config_file
+echo "#################################################################################################################" >> $config_file
 echo export http_proxy=wwwcache.open.ac.uk:80 >> $config_file
 echo export https_proxy=wwwcache.open.ac.uk:80 >> $config_file
 echo export no_proxy=localhost,127.0.0.0/8,127.0.1.1,127.0.1.1*,local.home >> $config_file

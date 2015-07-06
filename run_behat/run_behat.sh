@@ -204,12 +204,14 @@ else
 fi
 
 cp -R "${behatfaildump}" "${WORKSPACE}/${BUILD_NUMBER}"
+chmod -R 665 "${WORKSPACE}/${BUILD_NUMBER}"
 #rm -fr config.php
 rm -fr ${datadir}
 rm -fr ${datadirbehat}
 
 if [ ${exitstatus} -ne 0 ]
     # There has been some errors. Process them
+    echo fire off php script
 fi
 
 # If arrived here, return the exitstatus of the php execution

@@ -140,7 +140,6 @@ fi
 echo "Dropping DBs"
 if [[ "${dbtype}" == "pgsql" ]]; then
     export PGPASSWORD=${dbpass1}
-    export PGPASSWORD=${dbpass1}
     ${psqlcmd} -h $dbhost1 -U $dbuser1 -d template1 -c "DROP DATABASE ${installdb}"
     export PGPASSWORD=${dbpass2}
     ${psqlcmd} -h $dbhost2 -U $dbuser2 -d template1 -c "DROP DATABASE ${upgradedb}"

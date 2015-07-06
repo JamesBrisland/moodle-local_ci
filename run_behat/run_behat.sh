@@ -203,15 +203,13 @@ else
     exit 1
 fi
 
-chmod -R 665 "${behatfaildump}"
 mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
-chmod -R 665 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 find "${behatfaildump}" -exec cp {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
 #rm -fr config.php
 rm -fr ${datadir}
 rm -fr ${datadirbehat}
 
-if [ ${exitstatus} -ne 0 ]
+if [ ${exitstatus} -ne 0 ]; then
     # There has been some errors. Process them
     echo fire off php script
 fi

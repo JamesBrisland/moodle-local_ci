@@ -133,7 +133,7 @@ if [ $exitstatus -eq 0 ]; then
 
     # Check to see if we have an override
     if [ ! -z "${behat_tags_override}" -a "${behat_tags_override}" != " " ]; then
-        tags=${behat_tags_full_run}
+        tags=${behat_tags_override}
     fi
 
     echo Execuiting tags ${tags}

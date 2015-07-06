@@ -203,8 +203,10 @@ else
     exit 1
 fi
 
-cp -R "${behatfaildump}" "${WORKSPACE}/${BUILD_NUMBER}"
-chmod -R 665 "${WORKSPACE}/${BUILD_NUMBER}"
+chmod -R 665 "${behatfaildump}"
+mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
+chmod -R 665 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
+find "${behatfaildump}" -exec cp {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
 #rm -fr config.php
 rm -fr ${datadir}
 rm -fr ${datadirbehat}

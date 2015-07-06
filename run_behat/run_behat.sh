@@ -203,7 +203,7 @@ else
     exit 1
 fi
 
-cp "${behatfaildump}/*" "${WORKSPACE}/${BUILD_NUMBER}"
+cp -R "${behatfaildump}" "${WORKSPACE}/${BUILD_NUMBER}"
 #rm -fr config.php
 rm -fr ${datadir}
 rm -fr ${datadirbehat}

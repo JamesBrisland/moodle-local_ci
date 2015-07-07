@@ -3,13 +3,22 @@
 # Include the config file!
 config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_number}_${config_file}
 echo Config File: ${config_file}
+
+# Add the behat_workspace to the config file
+echo "behat_workspace=${WORKSPACE}" >> $config_file
+
 . ${config_file}
 
 # Don't be strict. Script has own error control handle
 set +e
 
-# file to capture execution output
+# Folder to capture execution output
 mkdir "${WORKSPACE}/${BUILD_NUMBER}"
+
+# Folder for details of successful runs. Will contain a file for each of the behat features along with the latest commit
+# when the last successful run was
+mkdir "${WORKSPACE}/successful"
+
 composer_init_output=${WORKSPACE}/${BUILD_NUMBER}/composer_init.txt
 behat_init_output=${WORKSPACE}/${BUILD_NUMBER}/behat_init.txt
 behat_pretty_full_output=${WORKSPACE}/${BUILD_NUMBER}/behat_pretty_full.txt
@@ -205,6 +214,8 @@ fi
 
 mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 find "${behatfaildump}" -exec cp {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
+cp ${config_file} "${WORKSPACE}/${BUILD_NUMBER}/"
+chmod 665 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 #rm -fr config.php
 rm -fr ${datadir}
 rm -fr ${datadirbehat}

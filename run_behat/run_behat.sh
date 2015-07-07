@@ -217,7 +217,7 @@ else
 fi
 
 mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
-find "${behatfaildump}" -exec cp {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
+find "${behatfaildump}" -exec cp -p {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
 cp ${config_file} "${WORKSPACE}/${BUILD_NUMBER}/"
 chmod 665 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 #rm -fr config.php

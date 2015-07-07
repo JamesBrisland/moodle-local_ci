@@ -18,8 +18,6 @@ print_r($config_data);
 
 $workspace = $config_data['behat_workspace'];
 $gitdir = str_replace('/', DIRECTORY_SEPARATOR, $config_data['gitdir']);
-$workspace = 'c:\\workspace\\james_moodle_ci\\run_behat\\moodle_ci_data';
-$local_gitdir = 'c:\\workspace\\sites\\ouvle\\';
 
 //- Setup the info for all the screenshots
 //- Iterate over files in the screenshot directory
@@ -39,7 +37,7 @@ $date->sub($di);
 
 //- Run the git command to get the last commit id from (now - three days). We use this if any of the tests have never
 //- passed and are currently failing
-exec('cd ' . $local_gitdir . ' && git rev-list -1 --before="' . $date->format("M j Y") . '" ' . $config_data['gitbranch'], $output);
+exec('cd ' . $gitdir . ' && git rev-list -1 --before="' . $date->format("M j Y") . '" ' . $config_data['gitbranch'], $output);
 $commit_id_three_days_ago = $output[0];
 
 //- Loop through all the XML files and find ones with failures
@@ -96,12 +94,12 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
         //- At this point we know this feature has failed, we want to collect some info, such as which files have changed
         //- between the last time the commit was successful and now and the people who have editted this file.
         $output = null;
-        exec("cd $local_gitdir && git log HEAD...$last_successful_run_commit_id $rel_feature_location | grep Author | sort | uniq | sed -r 's/Author: //'", $output);
+        exec("cd $gitdir && git log HEAD...$last_successful_run_commit_id $rel_feature_location | grep Author | sort | uniq | sed -r 's/Author: //'", $output);
 
         //- If the output is empty then that file hasn't been edited between the last commit and now. We want to get the last author of the file
         if (empty($output)) {
             $output = null;
-            exec("cd $local_gitdir && git log -n 1 HEAD $rel_feature_location | grep Author | sed -r 's/Author: //'", $output);
+            exec("cd $gitdir && git log -n 1 HEAD $rel_feature_location | grep Author | sed -r 's/Author: //'", $output);
 
             if (empty($output)) {
                 $emails = ['Ray.Guo <ray.guo@open.ac.uk>'];

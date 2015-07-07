@@ -5,18 +5,18 @@ $longops = array("workspace::");
 $options = getopt($shortops, $longops);
 
 if (empty($options['w']) && empty($options['workspace'])) {
-    //- Error, no config file, cannot parse
+    //- Error, no workspace, cannot parse
     exit(1);
 } else {
-    $config = !empty($options['workspace']) ? $options['workspace'] : $options['w'];
+    $workspace_inc_run_number = !empty($options['workspace']) ? $options['workspace'] : $options['w'];
 }
 
 //- Grab the vars from the config file - we are hackily suppressing errors as I know there will be some in the file
 //- as it's not actually an ini file, but it's close enough for us to extract the data we need
-$config_data = @parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . 'moodle_ci_data/config');
+$config_data = @parse_ini_file($workspace_inc_run_number . DIRECTORY_SEPARATOR . 'config');
 print_r($config_data);
 
-//$workspace = $config_data['behat_workspace'];
+$workspace = $config_data['behat_workspace'];
 $gitdir = str_replace('/', DIRECTORY_SEPARATOR, $config_data['gitdir']);
 $workspace = 'c:\\workspace\\james_moodle_ci\\run_behat\\moodle_ci_data';
 $local_gitdir = 'c:\\workspace\\sites\\ouvle\\';
@@ -26,8 +26,7 @@ $local_gitdir = 'c:\\workspace\\sites\\ouvle\\';
 $screenshots_at_time = [];
 foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'screenshots') as $fileInfo) {
     if ($fileInfo->isDot()) continue;
-    $file_modified_time = (int)($fileInfo->getMTime() / 100); # (remove the seconds)
-    $screenshots_at_time[$file_modified_time][] = $fileInfo->getBasename();
+    $screenshots_at_time[$fileInfo->getMTime()][] = $fileInfo->getBasename();
 }
 
 //- Get the last commit id from three days ago - we use this if any of the tests haven't had a success
@@ -67,6 +66,7 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
         //- Write out a success file that marks this git commit as a success
         file_put_contents($last_successful_run_file, $config_data['GIT_COMMIT']);
     } else {
+        $xml_file_name = $fileInfo->getFilename();
 
         //- Work out the path to the feature
         $feature_location = str_replace('TEST', '', $fileInfo->getFilename());
@@ -77,10 +77,10 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
         $rel_feature_location = ltrim(str_replace($gitdir, '', $feature_location), DIRECTORY_SEPARATOR);
 
         #DONOTCOMMIT
-        $abs_feature_location = 'c:' . DIRECTORY_SEPARATOR . 'workspace' . DIRECTORY_SEPARATOR . 'sites' . DIRECTORY_SEPARATOR . 'ouvle' . $rel_feature_location;
+        #$abs_feature_location = 'c:' . DIRECTORY_SEPARATOR . 'workspace' . DIRECTORY_SEPARATOR . 'sites' . DIRECTORY_SEPARATOR . 'ouvle' . $rel_feature_location;
         #DONOTCOMMIT
 
-        $feature_name = basename( $rel_feature_location );
+        $feature_name = basename($rel_feature_location);
 
         //- See if we have have a successful behat pass at some point in time
         if (file_exists($last_successful_run_file)) {
@@ -103,7 +103,7 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
             $output = null;
             exec("cd $local_gitdir && git log -n 1 HEAD $rel_feature_location | grep Author | sed -r 's/Author: //'", $output);
 
-            if( empty( $output ) ) {
+            if (empty($output)) {
                 $emails = ['Ray.Guo <ray.guo@open.ac.uk>'];
             } else {
                 $emails = $output;
@@ -113,91 +113,81 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
         }
 
         //- Loop through all the emails and check they are OU addresses
-        foreach( $emails as $index => $email )
-        {
-            if( strpos( $email, '@open.ac.uk' ) === false )
-            {
+        foreach ($emails as $index => $email) {
+            if (strpos($email, '@open.ac.uk') === false) {
                 //- This email isn't valid! Replace with Ray's
                 $emails[$index] = 'Ray.Guo <ray.guo@open.ac.uk>';
             }
         }
 
-        $failed_tests[$rel_feature_location]['emails'] = array_unique( $emails );
+        $failed_tests[$rel_feature_location]['feature_name'] = $feature_name;
+        $failed_tests[$rel_feature_location]['feature_path'] = $rel_feature_location;
+        $failed_tests[$rel_feature_location]['feature_xml_file'] = $xml_file_name;
+        $failed_tests[$rel_feature_location]['emails'] = array_unique($emails);
 
         //- Get a list of files that have changed between the last success commit id and the current commit id
 
         //- Now we almost have all the info we need we want to check to see if we can match up any screenshots
         //- Get the timestamp of the failed test file
         $file_modified_time = filemtime($file_path);
-        $file_modified_time = (int)($file_modified_time / 100); # (remove the seconds)
 
-        //- Check to see if we have any screenshots that were done within the same minute
-        if (isset($screenshots_at_time[$file_modified_time])) {
-            //- Potential screenshots
-            $failed_tests[$rel_feature_location]['screenshots'] = $screenshots_at_time[$file_modified_time];
-        }
-    }
-}
-
-print_r( $failed_tests );
-exit();
-
-$matches = [];
-preg_match_all('/^.*# (.*\.feature).*$/m', file_get_contents($workspace . DIRECTORY_SEPARATOR . 'behat_pretty_moodle.txt'), $matches);
-
-$info = !empty($matches[0]) ? $matches[0] : [];
-$files = array_unique(!empty($matches[1]) ? $matches[1] : []);
-
-//- Get all the last successful git commits for all the tests
-
-//- Get the git info for the feature files
-$files_info = [];
-foreach ($files as $file) {
-    $file_path_temp = str_replace('/var/lib/jenkins/git_repositories/OUVLE/', '', $file);
-    $file_path_temp = 'c:\\workspace\\sites\\ouvle\\' . $file_path_temp;
-    $fname = basename($file);
-    $feature_dir = dirname($file_path_temp);
-
-    $output = null;
-    exec("cd $feature_dir && git log $file_path_temp", $output);
-
-    //- Loop through the output and grab the last author
-    $to = '';
-    foreach ($output as $line) {
-        if (strpos($line, 'Author:') !== false) {
-            //- We have an author... see if we have an email
-            $to = trim(str_replace('Author:', '', $line));
-
-            //- Hacky way to test for an email... Usual form = "User Name <email@email.com>", we are just going to check
-            //- for an @ and assume if there is one we can use it to email the user... if not we will skip over to the next
-            //- author with an email address
-            if (strpos($to, '@') !== false) {
-                break; //- We've found the last person who authored that feature file that has an email address... break out
+        //- Check to see if we have any screenshots that were done within 20 seconds of the test file
+        foreach ($screenshots_at_time as $time => $files) {
+            if ($time >= $file_modified_time && $time <= ($file_modified_time + 20)) {
+                //- Potential screenshots
+                foreach( $files as $file ) {
+                    $failed_tests[$rel_feature_location]['screenshots'][] = $file;
+                }
             }
         }
     }
+}
 
-    $files_info[$fname]['author'] = $to;
+//- Now we have a list of failed tests along with screenshots
+$subject = "Behat failed test [BEHAT_FEATURE_PATH]";
+$text = <<<EOT
+The Behat test [BEHAT_FEATURE_PATH] has failed.
 
-    //- Now we have the author we want to check if there are any matches to screenshots.
+Please have a look at the output XML file \\\\vle-auto-test\\behat\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML]
 
-    //- First we need to find the test xml juint file and get the time
+[FEATURE_SCREENSHOTS]
+EOT;
 
-    //- Work out the filename of the generated jUnit XML file for this feature
-    $junit_file_name = "TEST" . $file;
-    $junit_file_name = str_replace('/', '-', $junit_file_name);
-    $junit_file_name = str_replace('.feature', '.xml', $junit_file_name);
+foreach ($failed_tests as $test_file => $info) {
+    $email_subject = str_replace('[BEHAT_FEATURE_PATH]', $info['feature_path'], $subject);
+    $email_text = str_replace('[BEHAT_FEATURE_PATH]', $info['feature_path'], $text);
+    $email_text = str_replace('[BEHAT_FEATURE_XML]', $info['feature_xml_file'], $email_text);
+    $email_text = str_replace('[BUILD_NUMBER]', $config_data['behat_build_number'], $email_text);
 
-    //- Get the timestamp from that file
-    $file_modified_time = filemtime($workspace . DIRECTORY_SEPARATOR . 'behat_junit_xml' . DIRECTORY_SEPARATOR . $junit_file_name);
-    $file_modified_time = (int)($file_modified_time / 100); # (remove the seconds)
+    if (!empty($info['screenshots'])) {
+        $screenshots = "Potential Screenshot/HTML files:\n";
+        foreach( $info['screenshots'] as $screenshot ) {
+            $screenshots .= '\\\\vle-auto-test\\behat\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . "\n";
+        }
+        $email_text = str_replace('[FEATURE_SCREENSHOTS]', $screenshots, $email_text);
+    } else {
+        $email_text = str_replace('[FEATURE_SCREENSHOTS]', '', $email_text);
+    }
 
-    //- Check to see if we have any screenshots that were done within the same minute
-    if (isset($screenshots_at_time[$file_modified_time])) {
-        //- Potential screenshots
-        $files_info[$fname]['screenshots'] = $screenshots_at_time[$file_modified_time];
+    //- Now email using PHPMailer
+    include_once( __DIR__ . '/PHPMailer-5.2.10/PHPMailerAutoload.php' );
+
+    $mail = new PHPMailer();
+    $mail->isSMTP();
+    $mail->Host = 'smtpmail.open.ac.uk';
+    $mail->From = 'from@example.com';
+    $mail->FromName = 'Mailer';
+    $mail->addAddress('james.brisland@open.ac.uk', 'James Brisland');
+    $mail->addReplyTo('info@example.com', 'Information');
+
+    $mail->Subject = $email_subject;
+    $mail->Body = $email_text;
+
+    if(!$mail->send()) {
+        echo "Failed to send email\n";
+        print_r( $mail );
     }
 }
 
-//- Now we should have a list of all the failed tests, along with an author
-print_r($files_info);
+//- Finished!
+exit(0);

@@ -5,7 +5,7 @@ config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_number}_
 echo Config File: ${config_file}
 
 # Add the behat_workspace and build number to the config file
-echo "behat_workspace=${WORKSPACE}" >> $config_file
+echo "behat_workspace=\"${WORKSPACE}\"" >> $config_file
 echo "behat_build_number=${BUILD_NUMBER}" >> $config_file
 
 . ${config_file}
@@ -218,7 +218,7 @@ fi
 
 mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 find "${behatfaildump}" -exec cp -p {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
-cp ${config_file} "${WORKSPACE}/${BUILD_NUMBER}/"
+cp ${config_file} "${WORKSPACE}/${BUILD_NUMBER}/config"
 chmod 665 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 #rm -fr config.php
 rm -fr ${datadir}
@@ -226,7 +226,7 @@ rm -fr ${datadirbehat}
 
 if [ ${exitstatus} -ne 0 ]; then
     # There has been some errors. Process them
-    echo fire off php script
+    php /var/lib/jenkins/git_repositories/ci_scripts/run_behat/process_results.php -w="${WORKSPACE}/${BUILD_NUMBER}"
 fi
 
 # If arrived here, return the exitstatus of the php execution

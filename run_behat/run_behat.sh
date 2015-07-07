@@ -4,8 +4,9 @@
 config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_number}_${config_file}
 echo Config File: ${config_file}
 
-# Add the behat_workspace to the config file
+# Add the behat_workspace and build number to the config file
 echo "behat_workspace=${WORKSPACE}" >> $config_file
+echo "behat_build_number=${BUILD_NUMBER}" >> $config_file
 
 . ${config_file}
 
@@ -14,6 +15,9 @@ set +e
 
 # Folder to capture execution output
 mkdir "${WORKSPACE}/${BUILD_NUMBER}"
+
+# Folder to for successful behat test pass git commit numbers
+mkdir "${WORKSPACE}/successful"
 
 # Folder for details of successful runs. Will contain a file for each of the behat features along with the latest commit
 # when the last successful run was

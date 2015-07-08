@@ -161,8 +161,6 @@ foreach ($failed_tests as $test_file => $info) {
     $email_text = str_replace('[BEHAT_FEATURE_XML]', $info['feature_xml_file'], $email_text);
     $email_text = str_replace('[BUILD_NUMBER]', $config_data['behat_build_number'], $email_text);
 
-    $email_text = "\n";
-
     if (!empty($info['screenshots'])) {
         $screenshots .= "Potential Matched Screenshot/HTML files for this test:\n";
         foreach( $info['screenshots'] as $screenshot ) {

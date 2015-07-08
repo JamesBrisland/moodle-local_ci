@@ -219,7 +219,7 @@ fi
 mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 find "${behatfaildump}" -exec cp -p {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
 cp ${config_file} "${WORKSPACE}/${BUILD_NUMBER}/config"
-chmod 665 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
+chmod -R 775 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 #rm -fr config.php
 rm -fr ${datadir}
 rm -fr ${datadirbehat}

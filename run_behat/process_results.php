@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('UTC');
+
 $shortops = "w::";
 $longops = array("workspace::");
 $options = getopt($shortops, $longops);
@@ -8,15 +10,14 @@ if (empty($options['w']) && empty($options['workspace'])) {
     //- Error, no workspace, cannot parse
     exit(1);
 } else {
-    $workspace_inc_run_number = !empty($options['workspace']) ? $options['workspace'] : $options['w'];
+    $workspace = !empty($options['workspace']) ? $options['workspace'] : $options['w'];
 }
 
 //- Grab the vars from the config file - we are hackily suppressing errors as I know there will be some in the file
 //- as it's not actually an ini file, but it's close enough for us to extract the data we need
-$config_data = @parse_ini_file($workspace_inc_run_number . DIRECTORY_SEPARATOR . 'config');
+$config_data = @parse_ini_file($workspace . DIRECTORY_SEPARATOR . 'config');
 print_r($config_data);
 
-$workspace = $config_data['behat_workspace'];
 $gitdir = str_replace('/', DIRECTORY_SEPARATOR, $config_data['gitdir']);
 
 //- Setup the info for all the screenshots
@@ -42,7 +43,7 @@ $commit_id_three_days_ago = $output[0];
 
 //- Loop through all the XML files and find ones with failures
 $failed_tests = [];
-$success_dir = $workspace . DIRECTORY_SEPARATOR . 'successful';
+$success_dir = $workspace . DIRECTORY_SEPARATOR . '/../successful';
 foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_xml') as $fileInfo) {
     if ($fileInfo->isDot()) continue;
 

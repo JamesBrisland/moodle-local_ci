@@ -42,7 +42,7 @@ fi
 # Going to install the $gitbranchinstalled database
 # Create the database to install
 echo "Creating database $installdb";
-if [[ "${dbtype}" == "pgsql" ]]; then
+if [[ "${dbtype}" == "pgsql" || "${dbtype}" == "ou_pgsql" ]]; then
     export PGPASSWORD=${dbpass1}
     ${psqlcmd} -h $dbhost1 -U $dbuser1 -d template1 -c "CREATE DATABASE $installdb ENCODING 'utf8'"
 elif [[ "${dbtype}" == "mysqli" ]]; then
@@ -61,7 +61,7 @@ fi
 
 # Create the database to upgrade
 echo "Creating database $upgradedb";
-if [[ "${dbtype}" == "pgsql" ]]; then
+if [[ "${dbtype}" == "pgsql" || "${dbtype}" == "ou_pgsql" ]]; then
     export PGPASSWORD=${dbpass2}
     ${psqlcmd} -h $dbhost2 -U $dbuser2 -d template1 -c "CREATE DATABASE $upgradedb ENCODING 'utf8'"
 elif [[ "${dbtype}" == "mysqli" ]]; then
@@ -138,7 +138,7 @@ fi
 
 # Drop the databases and delete files
 echo "Dropping DBs"
-if [[ "${dbtype}" == "pgsql" ]]; then
+if [[ "${dbtype}" == "pgsql" || "${dbtype}" == "ou_pgsql" ]]; then
     export PGPASSWORD=${dbpass1}
     ${psqlcmd} -h $dbhost1 -U $dbuser1 -d template1 -c "DROP DATABASE ${installdb}"
     export PGPASSWORD=${dbpass2}

@@ -53,7 +53,7 @@ datadir=/tmp/ci_dataroot_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
 dbprefixinstall="cii_"
 
 # Create the database to install
-if [[ "${dbtype}" == "pgsql" ]]; then
+if [[ "${dbtype}" == "pgsql" || "${dbtype}" == "ou_pgsql" ]]; then
     export PGPASSWORD=${dbpass}
     ${psqlcmd} -h $dbhost -U $dbuser -d template1 -c "CREATE DATABASE $upgradedb ENCODING 'utf8'"
 elif [[ "${dbtype}" == "mysqli" ]]; then
@@ -92,7 +92,7 @@ fi
 
 # Drop the databases and delete files
 echo "Dropping DBs"
-if [[ "${dbtype}" == "pgsql" ]]; then
+if [[ "${dbtype}" == "pgsql" || "${dbtype}" == "ou_pgsql" ]]; then
     export PGPASSWORD=${dbpass1}
     export PGPASSWORD=${dbpass1}
     ${psqlcmd} -h $dbhost1 -U $dbuser1 -d template1 -c "DROP DATABASE ${installdb}"

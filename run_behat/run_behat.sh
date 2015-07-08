@@ -48,7 +48,7 @@ set +e
 # Going to install the $gitbranch database
 # Create the database
 # Based on $dbtype, execute different DB creation commands (mysqli, pgsql)
-if [[ "${dbtype}" == "pgsql" ]]; then
+if [[ "${dbtype}" == "pgsql" || "${dbtype}" == "ou_pgsql" ]]; then
     export PGPASSWORD=${dbpass}
     ${psqlcmd} -h ${dbhost} -U ${dbuser} -d template1 \
         -c "CREATE DATABASE ${installdb} ENCODING 'utf8'"
@@ -204,7 +204,7 @@ fi
 
 # Drop the databases and delete files
 # Based on $dbtype, execute different DB deletion commands (pgsql, mysqli)
-if [[ "${dbtype}" == "pgsql" ]]; then
+if [[ "${dbtype}" == "pgsql" || "${dbtype}" == "ou_pgsql" ]]; then
     export PGPASSWORD=${dbpass}
     ${psqlcmd} -h ${dbhost} -U ${dbuser} -d template1 \
         -c "DROP DATABASE ${installdb}"

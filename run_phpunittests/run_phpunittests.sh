@@ -181,8 +181,7 @@ if [ $exitstatus -eq 0 ]; then
     exitstatus=${PIPESTATUS[0]}
 fi
 
-# Look for any stack sent to output, it will lead to failed execution
-# Conditionally
+# Look for any stack sent to output if phpunit returned success as it should lead to failed execution
 if [ $exitstatus -eq 0 ]; then
     # notices/warnings/errors under simpletest (phpunit captures them)
     stacks=$(grep 'Call Stack:' "${outputfile}" | wc -l)

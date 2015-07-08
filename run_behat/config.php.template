@@ -1,5 +1,11 @@
 <?php  /// Moodle Configuration File
 
+ini_set('html_errors', '1');
+ini_set('display_errors', 'On');
+
+ini_set('display_errors', 'On');
+error_reporting(E_ALL | E_STRICT);
+
 unset($CFG);
 global $CFG;
 $CFG = new stdClass();
@@ -18,7 +24,10 @@ $CFG->dbuser='%%DBUSER%%';
 $CFG->dbpass='%%DBPASS%%';
 $CFG->dbname='%%DBNAME%%';
 $CFG->prefix='mdl_';
-$CFG->dboptions=array();
+$CFG->dboptions = array (
+        'dbpersist' => 0,
+        'dbsocket' => 0,
+);
 
 // BEHAT settings
 
@@ -32,80 +41,69 @@ $CFG->behat_wwwroot = '%%BEHATURL%%';
 $CFG->behat_faildump_path = '%%BEHATFAILDUMP%%';
 
 $CFG->behat_config = array(
-    'chrome' => array(
-        'filters' => array(
-            'tags' => '~@_switch_window'
-        ),
-        'extensions' => array(
-            'Behat\MinkExtension\Extension' => array(
-                'selenium2' => array(
-                    'browser' => 'chrome',
-                    'wd_host' => 'http://127.0.0.1:4444/wd/hub'
+        'chrome' => array(
+                'filters' => array(
+                        'tags' => '~@_switch_window'
+                ),
+                'extensions' => array(
+                        'Behat\MinkExtension\Extension' => array(
+                                'selenium2' => array(
+                                        'browser' => 'chrome',
+                                        'wd_host' => 'http://127.0.0.1:4444/wd/hub'
+                                )
+                        )
                 )
-            )
-        )
-    ),
-    'ie' => array(
-        'filters' => array(
-            'tags' => '~@_switch_window'
         ),
-        'extensions' => array(
-            'Behat\MinkExtension\Extension' => array(
-                'selenium2' => array(
-                    'browser' => 'iexplore',
-                    'wd_host' => 'http:127.0.0.1:4444/wd/hub'
+        'ie' => array(
+                'filters' => array(
+                        'tags' => '~@_switch_window'
+                ),
+                'extensions' => array(
+                        'Behat\MinkExtension\Extension' => array(
+                                'selenium2' => array(
+                                        'browser' => 'iexplore',
+                                        'wd_host' => 'http:127.0.0.1:4444/wd/hub'
+                                )
+                        )
                 )
-            )
-        )
-    ),
-    'phantomjs' => array(
-        'filters' => array(
-            'tags' => '~@_switch_window&&~@_file_upload&&~@_alert&&~@_bug_phantomjs'
         ),
-        'extensions' => array(
-            'Behat\MinkExtension\Extension' => array(
-                'selenium2' => array(
-                    'browser' => 'phantomjs',
-                    'wd_host' => 'http://127.0.0.1:4444/wd/hub'
+        'phantomjs' => array(
+                'filters' => array(
+                        'tags' => '~@_switch_window&&~@_file_upload&&~@_alert&&~@_bug_phantomjs'
+                ),
+                'extensions' => array(
+                        'Behat\MinkExtension\Extension' => array(
+                                'selenium2' => array(
+                                        'browser' => 'phantomjs',
+                                        'wd_host' => 'http://127.0.0.1:4444/wd/hub'
+                                )
+                        )
                 )
-            )
         )
-    )
 );
-
-
 
 // Set correct server timezone
 date_default_timezone_set('%%TIMEZONE%%');
 
-// Debugging and performance footer
-$CFG->debug = E_ALL | E_STRICT;
-$CFG->xmlstrictheaders = false;
-$CFG->debugdisplay = true;
-$CFG->perfdebug = 15;
-define('MDL_PERFDB'  , true);
-$CFG->upgradeshowsql = true;
-$CFG->debugpageinfo  = true;
-
-// Early profiling
-$CFG->earlyprofilingenabled = true;
-$CFG->profilingautofrec = 10;
-$CFG->profilingincluded = '/*view.php,/*index.php';
-$CFG->profilingallowme = true;
-$CFG->profilingallowall = true;
-
-// Disable lang cache to get immediate changes
-$CFG->langstringcache = false;
-
 // STOP any mailout
 $CFG->noemailever = true;
+$CFG->theme_ou_disable_live_warning = 1;
+define('TEST_EXTERNAL_FILES_HTTP_URL', '');
+define('TEST_EXTERNAL_FILES_HTTPS_URL', '');
 
-// Ensure some stuff is always enabled
-$CFG->enablecompletion = true;
-$CFG->enableavailability = true;
-$CFG->usetags = true;
-$CFG->enableoutcomes = true;
-$CFG->usecomments = true;
+define('QTYPE_OPAQUE_TEST_ENGINE_QE',      'https://conebill.open.ac.uk/om-qe/services/Om');
+define('QTYPE_OPAQUE_TEST_ENGINE_TN',      'https://conebill.open.ac.uk/openmark/!question');
+define('QTYPE_OPAQUE_TEST_ENGINE_TIMEOUT', '5');
+
+define('QTYPE_STACK_TEST_CONFIG_PLATFORM',        'server');
+define('QTYPE_STACK_TEST_CONFIG_MAXIMAVERSION',   '5.23.2');
+define('QTYPE_STACK_TEST_CONFIG_CASTIMEOUT',      '5');
+define('QTYPE_STACK_TEST_CONFIG_CASRESULTSCACHE', 'db');
+define('QTYPE_STACK_TEST_CONFIG_MAXIMACOMMAND',   'http://vle-stack-acct:8080/MaximaPool/MaximaPool');
+define('QTYPE_STACK_TEST_CONFIG_PLOTCOMMAND',     '');
+define('QTYPE_STACK_TEST_CONFIG_CASDEBUGGING',    '0');
+
+define('FILTER_MATHS_TEST_SERVICE_URL_BASE', 'http://students-acct.open.ac.uk/webmaths/');
 
 // Extra settings
 %%EXTRACONFIG%%

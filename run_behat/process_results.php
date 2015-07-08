@@ -147,7 +147,10 @@ $subject = "Behat failed test [BEHAT_FEATURE_PATH]";
 $text = <<<EOT
 The Behat test [BEHAT_FEATURE_PATH] has failed.
 
-Please have a look at the output XML file \\\\vle-auto-test\\behat\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML]
+Output folder \\\\vle-auto-test\\behat\\[BUILD_NUMBER]
+Screenshot/HTML folder: \\\\vle-auto-test\\behat\\[BUILD_NUMBER]\\screenshots
+
+Please have a look at the output XML file for this test \\\\vle-auto-test\\behat\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML] for more details
 
 [FEATURE_SCREENSHOTS]
 EOT;
@@ -158,8 +161,10 @@ foreach ($failed_tests as $test_file => $info) {
     $email_text = str_replace('[BEHAT_FEATURE_XML]', $info['feature_xml_file'], $email_text);
     $email_text = str_replace('[BUILD_NUMBER]', $config_data['behat_build_number'], $email_text);
 
+    $email_text = "\n";
+
     if (!empty($info['screenshots'])) {
-        $screenshots = "Potential Screenshot/HTML files:\n";
+        $screenshots .= "Potential Matched Screenshot/HTML files for this test:\n";
         foreach( $info['screenshots'] as $screenshot ) {
             $screenshots .= '\\\\vle-auto-test\\behat\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . "\n";
         }

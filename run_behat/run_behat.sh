@@ -132,12 +132,6 @@ if [ $exitstatus -eq 0 ]; then
     echo -e "\n\n---------------------------------------------------------------\n\n"
     date
     echo -e "\n\n---------------------------------------------------------------\n\n"
-
-    #- Copy the directory into a unique one in /var/www/html so that if we rebuild this job process it's always running
-    #- on a unique checkout of the code
-    echo -e "Setup apache www folder /var/www/html/${setup_build_start_time}_${config_file}\n\n"
-    cp -pR ${gitdir} /var/www/html/${setup_build_start_time}_${config_file}"
-
     echo "Launching Selenium and sleeping for 2 seconds to allow time for launch"
     /opt/selenium/selenium.sh > "${selenium_output}" 2>&1 &
     sleep 2

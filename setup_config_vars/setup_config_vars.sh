@@ -10,8 +10,8 @@ mkdir ${JENKINS_HOME}/git_repositories/config_files
 setup_job_start_time=`date +%Y%m%d_%H%M%S`
 config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_job_start_time}_${config_file}
 
-#- Export the start time for use in other scripts
-export setup_job_start_time=${setup_job_start_time}
+#- start time for use in other scripts
+echo "setup_job_start_time=${setup_job_start_time}" > myfile.properties
 
 echo "00. Setup Job start time: ${setup_job_start_time}"
 echo Config file: ${config_file}

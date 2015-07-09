@@ -218,6 +218,7 @@ cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}"
 chmod -R 775 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 echo "Cleanup"
 rm -f /var/www/html/jenkins_${BUILD_NUMBER}
+rm -f ${config_file}
 rm -f ${gitdir}/config.php
 rm -fr ${datadir}
 rm -fr ${datadirbehat}

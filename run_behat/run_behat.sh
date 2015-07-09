@@ -3,14 +3,14 @@
 # Include the config file!
 echo "00. Setup Job start time: ${setup_build_start_time}"
 echo Config File: ${config_file}
-config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${config_file}
+config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${config_file}
 
 # Add the behat_workspace and build number to the config file
-echo "behat_workspace=\"${WORKSPACE}\"" >> $config_file
-echo "behat_build_number=${BUILD_NUMBER}" >> $config_file
-echo "behat_job_name=\"${JOB_NAME}\"" >> $config_file
+echo "behat_workspace=\"${WORKSPACE}\"" >> $config_file_path
+echo "behat_build_number=${BUILD_NUMBER}" >> $config_file_path
+echo "behat_job_name=\"${JOB_NAME}\"" >> $config_file_path
 
-. ${config_file}
+. ${config_file_path}
 
 # Don't be strict. Script has own error control handle
 set +e
@@ -212,12 +212,12 @@ fi
 echo "Moving screenshots / html"
 mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 find "${behatfaildump}" -exec cp -p {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
-cp ${config_file} "${WORKSPACE}/${BUILD_NUMBER}/config"
+cp ${config_file_path} "${WORKSPACE}/${BUILD_NUMBER}/config"
 cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}"
 chmod -R 775 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 echo "Cleanup"
 rm -f /var/www/html/jenkins_${BUILD_NUMBER}
-rm -f ${config_file}
+rm -f ${config_file_path}
 rm -f ${gitdir}/config.php
 rm -fr ${datadir}
 rm -fr ${datadirbehat}

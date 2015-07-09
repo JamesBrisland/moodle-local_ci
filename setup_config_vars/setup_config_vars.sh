@@ -15,6 +15,7 @@ export setup_job_start_time=${setup_job_start_time}
 
 echo "00. Setup Job start time: ${setup_job_start_time}"
 echo Config file: ${config_file}
+export -p
 
 # Delete the config file and create a new one
 rm -f $config_file

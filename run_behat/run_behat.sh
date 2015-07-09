@@ -91,8 +91,8 @@ replacements="%%DBLIBRARY%%#${dblibrary}
 %%DATADIR%%#${datadir}
 %%DATADIRBEHAT%%#${datadirbehat}
 %%BEHATPREFIX%%#${behatprefix}
-%%BEHATURL%%#${behaturl}/jenkins_${BUILD_NUMBER}
-%%MOODLEURL%%#${moodleurl}/jenkins_${BUILD_NUMBER}
+%%BEHATURL%%#${behaturl}/${setup_build_start_time}_${config_file}
+%%MOODLEURL%%#${moodleurl}/${setup_build_start_time}_${config_file}
 %%BEHATFAILDUMP%%#${behatfaildump}
 %%TIMEZONE%%#${timezone}
 "

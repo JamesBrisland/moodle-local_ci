@@ -7,6 +7,7 @@ echo Config File: ${config_file}
 # Add the behat_workspace and build number to the config file
 echo "behat_workspace=\"${WORKSPACE}\"" >> $config_file
 echo "behat_build_number=${BUILD_NUMBER}" >> $config_file
+echo "behat_job_name=\"${JOB_NAME}\"" >> $config_file
 
 . ${config_file}
 
@@ -138,6 +139,11 @@ if [ $exitstatus -eq 0 ]; then
     echo -e "\n\n---------------------------------------------------------------\n\n"
 
     # Setup the tags
+    if [[ (-z "${behat_tags_override}" || "${behat_tags_override}" == " ") && (-z "${behat_do_full_run}" || "${behat_do_full_run}" == " ") && (-z "${behat_tags_partial_run}" || "${behat_tags_partial_run}" == " ") ]] ; then
+        echo "No tags specified. Behat execution cancelled. Exiting."
+        exit 1;
+    fi
+
     if [ "${behat_do_full_run}" = "yes" ]; then
         tags=${behat_tags_full_run}
     else
@@ -149,12 +155,12 @@ if [ $exitstatus -eq 0 ]; then
         tags=${behat_tags_override}
     fi
 
-    echo Execuiting tags ${tags}
+    echo -e "====== Executing tags ${tags} ======\n\n"
 
     # This will output the moodle_progress format to the console and write moodle_progress, behat pretty and junit formats to files
     ${gitdir}/vendor/bin/behat -v --config "${datadirbehat}/behat/behat.yml" --format moodle_progress,moodle_progress,pretty,junit --out=,"${behat_pretty_moodle_output}","${behat_pretty_full_output}","${junit_output_folder}" --tags=${tags} --profile=chrome
     exitstatus=${PIPESTATUS[0]}
-    echo "Behat finished. Exit status ${exitstatus}"
+    echo -e "\nBehat finished. Exit status ${exitstatus}"
 fi
 
 # Look for any stack sent to output if behat returned success as it should lead to failed execution
@@ -162,36 +168,31 @@ if [ $exitstatus -eq 0 ]; then
     # notices/warnings/errors under simpletest (behat captures them)
     stacks=$(grep -r 'Call Stack:' "${junit_output_folder}" | wc -l)
     if [[ ${stacks} -gt 0 ]]; then
-        echo -e "\n\n"
-        echo "ERROR: uncontrolled notice/warning/error output on execution."
+        echo -e "\n\nERROR: uncontrolled notice/warning/error output on execution."
         exitstatus=1
     fi
     # debugging messages
     debugging=$(grep -r 'Debugging:' "${junit_output_folder}" | wc -l)
     if [[ ${debugging} -gt 0 ]]; then
-        echo -e "\n\n"
-        echo "ERROR: uncontrolled debugging output on execution."
+        echo -e "\n\nERROR: uncontrolled debugging output on execution."
         exitstatus=1
     fi
     # general backtrace information
     backtrace=$(grep -r 'line [0-9]* of .*: call to' "${junit_output_folder}" | wc -l)
     if [[ ${backtrace} -gt 0 ]]; then
-        echo -e "\n\n"
-        echo "ERROR: uncontrolled backtrace output on execution."
+        echo -e "\n\nERROR: uncontrolled backtrace output on execution."
         exitstatus=1
     fi
     # anything exceptional (not dots and numbers) in the execution lines.
     exceptional=$(grep -rP '^\.|%\)$' "${junit_output_folder}" | grep -vP '^[\.SIEF]*[ \d/\(\)%]*$' | wc -l)
     if [[ ${exceptional} -gt 0 ]]; then
-        echo -e "\n\n"
-        echo "ERROR: uncontrolled exceptional output on execution."
+        echo -e "\n\nERROR: uncontrolled exceptional output on execution."
         exitstatus=1
     fi
     # Exceptions.
     exception=$(grep -r 'Exception' "${junit_output_folder}" | wc -l)
     if [[ ${exception} -gt 0 ]]; then
-        echo -e "\n\n"
-        echo "ERROR: exception during behat run."
+        echo -e "\n\nERROR: exception during behat run."
         exitstatus=1
     fi
 fi
@@ -210,16 +211,21 @@ else
     exit 1
 fi
 
+echo "Moving screenshots / html"
 mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 find "${behatfaildump}" -exec cp -p {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
 cp ${config_file} "${WORKSPACE}/${BUILD_NUMBER}/config"
+cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}"
 chmod -R 775 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
-#rm -fr config.php
+echo "Cleanup"
+rm -f /var/www/html/jenkins_${BUILD_NUMBER}
+rm -f ${gitdir}/config.php
 rm -fr ${datadir}
 rm -fr ${datadirbehat}
 
 if [ ${exitstatus} -ne 0 ]; then
     # There has been some errors. Process them
+    echo "Errors found during Behat run. Processing and emailing."
     php /var/lib/jenkins/git_repositories/ci_scripts/run_behat/process_results.php -w="${WORKSPACE}/${BUILD_NUMBER}"
 fi
 

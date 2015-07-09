@@ -75,10 +75,6 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
         $abs_feature_location = $feature_location;
         $rel_feature_location = ltrim(str_replace($gitdir, '', $feature_location), DIRECTORY_SEPARATOR);
 
-        #DONOTCOMMIT
-        #$abs_feature_location = 'c:' . DIRECTORY_SEPARATOR . 'workspace' . DIRECTORY_SEPARATOR . 'sites' . DIRECTORY_SEPARATOR . 'ouvle' . $rel_feature_location;
-        #DONOTCOMMIT
-
         $feature_name = basename($rel_feature_location);
 
         //- See if we have have a successful behat pass at some point in time
@@ -103,7 +99,7 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
             exec("cd $gitdir && git log -n 1 HEAD $rel_feature_location | grep Author | sed -r 's/Author: //'", $output);
 
             if (empty($output)) {
-                $emails = ['Ray.Guo <ray.guo@open.ac.uk>'];
+                $emails = [$config_data['fail_email']];
             } else {
                 $emails = $output;
             }
@@ -114,10 +110,13 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
         //- Loop through all the emails and check they are OU addresses
         foreach ($emails as $index => $email) {
             if (strpos($email, '@open.ac.uk') === false) {
-                //- This email isn't valid! Replace with Ray's
-                $emails[$index] = 'Ray.Guo <ray.guo@open.ac.uk>';
+                //- This email isn't valid! Replace with the fail email set in config
+                $emails[$index] = $config_data['fail_email'];
             }
         }
+
+        //- Always send a copy to the fail_email address
+        $emails[] = $config_data['fail_email'];
 
         $failed_tests[$rel_feature_location]['feature_name'] = $feature_name;
         $failed_tests[$rel_feature_location]['feature_path'] = $rel_feature_location;
@@ -134,7 +133,7 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
         foreach ($screenshots_at_time as $time => $files) {
             if ($time >= $file_modified_time && $time <= ($file_modified_time + 20)) {
                 //- Potential screenshots
-                foreach( $files as $file ) {
+                foreach ($files as $file) {
                     $failed_tests[$rel_feature_location]['screenshots'][] = $file;
                 }
             }
@@ -143,9 +142,9 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
 }
 
 //- Now we have a list of failed tests along with screenshots
-$subject = "Behat failed test [BEHAT_FEATURE_PATH]";
+$subject = "{$config_data['behat_job_name']} - Failed Test - [BEHAT_FEATURE_PATH]";
 $text = <<<EOT
-The Behat test [BEHAT_FEATURE_PATH] has failed.
+{$config_data['behat_job_name']} - Failed Test - [BEHAT_FEATURE_PATH].
 
 Output folder \\\\vle-auto-test\\behat\\[BUILD_NUMBER]
 Screenshot/HTML folder: \\\\vle-auto-test\\behat\\[BUILD_NUMBER]\\screenshots
@@ -162,32 +161,42 @@ foreach ($failed_tests as $test_file => $info) {
     $email_text = str_replace('[BUILD_NUMBER]', $config_data['behat_build_number'], $email_text);
 
     if (!empty($info['screenshots'])) {
-        $screenshots .= "Potential Matched Screenshot/HTML files for this test:\n";
-        foreach( $info['screenshots'] as $screenshot ) {
+        $screenshots = "Potential Matched Screenshot/HTML files for this test:\n";
+        foreach ($info['screenshots'] as $screenshot) {
             $screenshots .= '\\\\vle-auto-test\\behat\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . "\n";
         }
         $email_text = str_replace('[FEATURE_SCREENSHOTS]', $screenshots, $email_text);
     } else {
-        $email_text = str_replace('[FEATURE_SCREENSHOTS]', '', $email_text);
+        $email_text = str_replace('[FEATURE_SCREENSHOTS]', 'We were unable to match up any screenshots/html files to this failed test.', $email_text);
     }
 
     //- Now email using PHPMailer
-    include_once( __DIR__ . '/PHPMailer-5.2.10/PHPMailerAutoload.php' );
+    include_once(__DIR__ . '/PHPMailer-5.2.10/PHPMailerAutoload.php');
 
     $mail = new PHPMailer();
     $mail->isSMTP();
     $mail->Host = 'smtpmail.open.ac.uk';
-    $mail->From = 'from@example.com';
-    $mail->FromName = 'Mailer';
-    $mail->addAddress('james.brisland@open.ac.uk', 'James Brisland');
-    $mail->addReplyTo('info@example.com', 'Information');
+
+    //- For some reason I cannot use an open.ac.uk email address as the server tries to validate the address
+    $mail->From = 'no-reply@no-reply.com';
+    $mail->FromName = 'VLE Jenkins';
+    $mail->addReplyTo('no-reply@no-reply.com', 'VLE Jenkins');
+
+    if (!empty($config_data['email_override'])) {
+        $mail->addAddress($config_data['email_override']);
+    } else {
+        foreach ($info['emails'] as $email) {
+            $mail->addAddress($email);
+        }
+    }
 
     $mail->Subject = $email_subject;
     $mail->Body = $email_text;
 
-    if(!$mail->send()) {
+    if (!$mail->send()) {
         echo "Failed to send email\n";
-        print_r( $mail );
+        print_r($mail);
+        echo "\n\n";
     }
 }
 

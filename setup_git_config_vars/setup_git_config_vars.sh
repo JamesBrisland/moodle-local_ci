@@ -2,10 +2,9 @@
 # Don't be strict. Script has own error control handle
 set +e
 
-echo "00. Setup Job start time: ${setup_job_start_time}"
+echo "00. Setup Job start time: ${setup_build_start_time}"
 echo Config file: ${config_file}
-
-. ${JENKINS_HOME}/git_repositories/config_files/${setup_job_start_time}_${config_file}
+config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${config_file}
 
 if [ ! -z "${GIT_COMMIT}" ]; then
     echo GIT_COMMIT=${GIT_COMMIT} >> $config_file
@@ -18,5 +17,5 @@ exit 1
 
 #- Copy the directory into a unique one in /var/www/html so that if we rebuild this job process it's always running
 #- on a unique checkout of the code
-echo "Setup apache www folder /var/www/html/${job_start_time}_${config_file}"
-cp -pR ${gitdir} /var/www/html/${job_start_time}_${config_file}"
+echo "Setup apache www folder /var/www/html/${setup_build_start_time}_${config_file}"
+cp -pR ${gitdir} /var/www/html/${setup_build_start_time}_${config_file}"

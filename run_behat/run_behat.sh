@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Include the config file!
-config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_number}_${config_file}
+config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${config_file}
 echo Config File: ${config_file}
 
 # Add the behat_workspace and build number to the config file

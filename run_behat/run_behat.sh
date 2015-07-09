@@ -131,8 +131,6 @@ if [ $exitstatus -eq 0 ]; then
     echo -e "\n\n---------------------------------------------------------------\n\n"
     date
     echo -e "\n\n---------------------------------------------------------------\n\n"
-    echo "Setup apache www folder /var/www/html/jenkins_${BUILD_NUMBER}"
-    ln -s ${gitdir} /var/www/html/jenkins_${BUILD_NUMBER}
     echo "Launching Selenium and sleeping for 2 seconds to allow time for launch"
     /opt/selenium/selenium.sh > "${selenium_output}" 2>&1 &
     sleep 2

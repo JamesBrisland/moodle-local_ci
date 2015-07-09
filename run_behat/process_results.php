@@ -148,10 +148,10 @@ $text = <<<EOT
 
 Test run on branch {$config_data['gitbranch']}.
 
-Output folder \\\\vle-auto-test\\behat\\[BUILD_NUMBER]
-Screenshot/HTML folder: \\\\vle-auto-test\\behat\\[BUILD_NUMBER]\\screenshots
+Output folder \\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]
+Screenshot/HTML folder: \\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\screenshots
 
-Please have a look at the output XML file for this test \\\\vle-auto-test\\behat\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML] for more details
+Please have a look at the output XML file for this test \\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML] for more details
 
 [FEATURE_SCREENSHOTS]
 EOT;

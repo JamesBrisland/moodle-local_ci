@@ -8,10 +8,12 @@ jenkins_vars=$(( set -o posix ; set ) | grep ".*jenkins_.*" )
 mkdir ${JENKINS_HOME}/git_repositories/config_files
 
 setup_job_start_time=`date +%Y%m%d_%H%M%S`
-config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_job_start_time}_${config_file}
 
-#- start time for use in other scripts
-echo "setup_job_start_time=${setup_job_start_time}" > myfile.properties
+#- Vars for use in other scripts
+echo "setup_job_start_time=${setup_job_start_time}" > config.properties
+echo "config_file=${config_file}" >> config.properties
+config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_job_start_time}_${config_file}
+echo "config_file_fullpath=${config_file}" >> config.properties
 
 echo "00. Setup Job start time: ${setup_job_start_time}"
 echo Config file: ${config_file}
@@ -36,3 +38,5 @@ do
     # Replaces the FIRST jenkins_ with nothing and puts it into the config file
     echo ${i/jenkins_/} >> $config_file
 done
+
+cat $config_file

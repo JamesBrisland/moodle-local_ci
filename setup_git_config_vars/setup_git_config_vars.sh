@@ -20,6 +20,3 @@ exit 1
 #- on a unique checkout of the code
 echo "Setup apache www folder /var/www/html/${job_start_time}_${config_file}"
 cp -pR ${gitdir} /var/www/html/${job_start_time}_${config_file}"
-
-# Setup the www_dir for use in the behat step
-export www_dir="/var/www/html/${job_start_time}_${config_file}"

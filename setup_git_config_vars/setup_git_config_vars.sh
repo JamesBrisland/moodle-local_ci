@@ -2,10 +2,10 @@
 # Don't be strict. Script has own error control handle
 set +e
 
-echo "00. Setup Job start time: ${job_start_time}"
+echo "00. Setup Job start time: ${setup_job_start_time}"
 echo Config file: ${config_file}
 
-. ${JENKINS_HOME}/git_repositories/config_files/${job_start_time}_${config_file}
+. ${JENKINS_HOME}/git_repositories/config_files/${setup_job_start_time}_${config_file}
 
 if [ ! -z "${GIT_COMMIT}" ]; then
     echo GIT_COMMIT=${GIT_COMMIT} >> $config_file

@@ -146,6 +146,8 @@ $subject = "{$config_data['behat_job_name']} - Failed Test - [BEHAT_FEATURE_PATH
 $text = <<<EOT
 {$config_data['behat_job_name']} - Failed Test - [BEHAT_FEATURE_PATH].
 
+Test run on branch {$config_data['gitbranch']}.
+
 Output folder \\\\vle-auto-test\\behat\\[BUILD_NUMBER]
 Screenshot/HTML folder: \\\\vle-auto-test\\behat\\[BUILD_NUMBER]\\screenshots
 

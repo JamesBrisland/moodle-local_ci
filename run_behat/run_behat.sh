@@ -14,6 +14,12 @@ echo "behat_job_name=\"${JOB_NAME}\"" >> $config_file
 # Don't be strict. Script has own error control handle
 set +e
 
+# Check for tags
+if [[ (-z "${behat_tags_override}" || "${behat_tags_override}" == " ") && (-z "${behat_do_full_run}" || "${behat_do_full_run}" == " ") && (-z "${behat_tags_partial_run}" || "${behat_tags_partial_run}" == " ") ]] ; then
+    echo "No tags specified. Behat execution cancelled. Exiting."
+    exit 1;
+fi
+
 # Folder to capture execution output
 mkdir "${WORKSPACE}/${BUILD_NUMBER}"
 
@@ -99,7 +105,6 @@ done
 # Apply extra configuration separatedly (multiline...)
 text=$( echo "${text}" | perl -0pe "s!%%EXTRACONFIG%%!${extraconfig}!g" )
 
-
 # Save the config.php into destination
 echo "${text}" > ${gitdir}/config.php
 
@@ -137,12 +142,6 @@ if [ $exitstatus -eq 0 ]; then
     unset no_proxy
     echo "Unsetting proxy as it's not needed when runnig behat tests locally. Moodle config has proxy settings in for anything Moodle does."
     echo -e "\n\n---------------------------------------------------------------\n\n"
-
-    # Setup the tags
-    if [[ (-z "${behat_tags_override}" || "${behat_tags_override}" == " ") && (-z "${behat_do_full_run}" || "${behat_do_full_run}" == " ") && (-z "${behat_tags_partial_run}" || "${behat_tags_partial_run}" == " ") ]] ; then
-        echo "No tags specified. Behat execution cancelled. Exiting."
-        exit 1;
-    fi
 
     if [ "${behat_do_full_run}" = "yes" ]; then
         tags=${behat_tags_full_run}

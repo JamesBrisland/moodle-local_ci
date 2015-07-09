@@ -1,19 +1,18 @@
 #!/bin/bash
 
+# Don't be strict. Script has own error control handle
+set +e
+
 # Include the config file!
 echo "00. Setup Job start time: ${setup_build_start_time}"
-echo Config File: ${config_file}
-config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${config_file}
+echo Unique Job Ident: ${unique_job_ident}
+config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${unique_job_ident}
+. ${config_file_path}
 
 # Add the behat_workspace and build number to the config file
 echo "behat_workspace=\"${WORKSPACE}\"" >> $config_file_path
 echo "behat_build_number=${BUILD_NUMBER}" >> $config_file_path
 echo "behat_job_name=\"${JOB_NAME}\"" >> $config_file_path
-
-. ${config_file_path}
-
-# Don't be strict. Script has own error control handle
-set +e
 
 # Check for tags
 if [[ (-z "${behat_tags_override}" || "${behat_tags_override}" == " ") && (-z "${behat_do_full_run}" || "${behat_do_full_run}" == " ") && (-z "${behat_tags_partial_run}" || "${behat_tags_partial_run}" == " ") ]] ; then
@@ -42,10 +41,10 @@ junit_output_folder=${WORKSPACE}/${BUILD_NUMBER}/behat_junit_xml
 
 # calculate some variables
 mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-installdb=ci_behat_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
-datadirbehat=${datadir}/moodledata_behat_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
-behatfaildump=${datadir}/behatfailedump_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
-datadir=${datadir}/moodledata_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
+installdb=${setup_build_start_time}_${unique_job_ident}_ci_behat
+datadirbehat=${datadir}/${setup_build_start_time}_${unique_job_ident}_moodledata_behat
+behatfaildump=${datadir}/${setup_build_start_time}_${unique_job_ident}_behatfailedump
+datadir=${datadir}/${setup_build_start_time}_${unique_job_ident}_moodledata
 
 # prepare the composer stuff needed to run this job
 . ${mydir}/../prepare_composer_stuff/prepare_composer_stuff.sh
@@ -91,8 +90,8 @@ replacements="%%DBLIBRARY%%#${dblibrary}
 %%DATADIR%%#${datadir}
 %%DATADIRBEHAT%%#${datadirbehat}
 %%BEHATPREFIX%%#${behatprefix}
-%%BEHATURL%%#${behaturl}/${setup_build_start_time}_${config_file}
-%%MOODLEURL%%#${moodleurl}/${setup_build_start_time}_${config_file}
+%%BEHATURL%%#${behaturl}/${setup_build_start_time}_${unique_job_ident}
+%%MOODLEURL%%#${moodleurl}/${setup_build_start_time}_${unique_job_ident}
 %%BEHATFAILDUMP%%#${behatfaildump}
 %%TIMEZONE%%#${timezone}
 "
@@ -216,7 +215,7 @@ cp ${config_file_path} "${WORKSPACE}/${BUILD_NUMBER}/config"
 cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}"
 chmod -R 775 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 echo "Cleanup"
-rm -f /var/www/html/jenkins_${BUILD_NUMBER}
+rm -Rf /var/www/html/${setup_build_start_time}_${unique_job_ident}
 rm -f ${config_file_path}
 rm -f ${gitdir}/config.php
 rm -fr ${datadir}

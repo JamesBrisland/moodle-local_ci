@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Don't be strict. Script has own error control handle
+set +e
 
 # $phpcmd: Path to the PHP CLI executable
 # $psqlcmd: Path to the psql CLI executable
@@ -15,14 +17,11 @@
 #                        raise error or just warning (dlft).
 # $extraconfig: Extra settings that will be injected ti config.php
 
-
 # Include the config file!
-config_file=${JENKINS_HOME}/git_repositories/config_files/${setup_build_number}_${config_file}
-echo Config file: ${config_file}
-. ${config_file}
-
-# Don't be strict. Script has own error control handle
-set +e
+echo "00. Setup Job start time: ${setup_build_start_time}"
+echo Unique Job Ident: ${unique_job_ident}
+config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${unique_job_ident}
+. ${config_file_path}
 
 # file to capture execution output
 mkdir "${WORKSPACE}/${BUILD_NUMBER}"

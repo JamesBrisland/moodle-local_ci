@@ -23,9 +23,6 @@ fi
 # Folder to capture execution output
 mkdir "${WORKSPACE}/${BUILD_NUMBER}"
 
-# Folder to for successful behat test pass git commit numbers
-mkdir "${WORKSPACE}/successful"
-
 # Folder for details of successful runs. Will contain a file for each of the behat features along with the latest commit
 # when the last successful run was
 mkdir "${WORKSPACE}/successful"
@@ -41,7 +38,7 @@ junit_output_folder=${WORKSPACE}/${BUILD_NUMBER}/behat_junit_xml
 
 # calculate some variables
 mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-installdb=${setup_build_start_time}_${unique_job_ident}_ci_behat
+installdb=ci_behat_${setup_build_start_time}_${unique_job_ident}
 datadirbehat=${datadir}/${setup_build_start_time}_${unique_job_ident}_moodledata_behat
 behatfaildump=${datadir}/${setup_build_start_time}_${unique_job_ident}_behatfailedump
 datadir=${datadir}/${setup_build_start_time}_${unique_job_ident}_moodledata

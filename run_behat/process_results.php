@@ -197,6 +197,7 @@ foreach ($failed_tests as $test_file => $info) {
 
     $mail->Subject = $email_subject;
     $mail->Body = $email_text;
+    $mail->AltBody = "Sorry, no text version available.. here is the HTML version!\n\n" . $email_text;
 
     if (!$mail->send()) {
         echo "Failed to send email\n";

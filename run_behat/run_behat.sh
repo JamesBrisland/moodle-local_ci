@@ -72,7 +72,7 @@ fi
 
 # Do the moodle install
 cd $gitdir && git reset --hard $gitbranch
-rm -fr config.php
+rm -f ${gitdir}/config.php
 
 # To execute the behat tests we don't need a real site installed, just the behat-prefixed one.
 # For now we are using one template config.php containing all the required vars and then we run the init shell script
@@ -104,8 +104,7 @@ text=$( echo "${text}" | perl -0pe "s!%%EXTRACONFIG%%!${extraconfig}!g" )
 
 # Save the config.php into destination
 echo "${text}" > "${gitdir}/config.php"
-echo "config.php"
-cat "${gitdir}/config.php"
+cp "${gitdir}/config.php" "/var/html/www/${setup_build_start_time}_${unique_job_ident}"
 
 # Create the moodledata dir
 mkdir -p "${datadir}"

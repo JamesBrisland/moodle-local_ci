@@ -165,7 +165,7 @@ foreach ($failed_tests as $test_file => $info) {
     if (!empty($info['screenshots'])) {
         $screenshots = "Potential Matched Screenshot/HTML files for this test:<br/>\n";
         foreach ($info['screenshots'] as $screenshot) {
-            $screenshots .= '\\\\vle-auto-test\\behat\\' . $config_data['behat_job_name'] . '\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . '">' . $screenshot . "</a><br/>\n";
+            $screenshots .= '<a href="\\\\vle-auto-test\\behat\\' . $config_data['behat_job_name'] . '\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . '">' . $screenshot . "</a><br/>\n";
         }
         $email_text = str_replace('[FEATURE_SCREENSHOTS]', $screenshots, $email_text);
     } else {

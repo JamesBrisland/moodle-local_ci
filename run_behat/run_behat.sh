@@ -104,8 +104,7 @@ text=$( echo "${text}" | perl -0pe "s!%%EXTRACONFIG%%!${extraconfig}!g" )
 
 # Save the config.php into destination
 echo "${text}" > "${gitdir}/config.php"
-echo "cp \"${gitdir}/config.php\" \"/var/html/www/${setup_build_start_time}_${unique_job_ident}\""
-cp "${gitdir}/config.php" "/var/html/www/${setup_build_start_time}_${unique_job_ident}"
+cp "${gitdir}/config.php" "/var/www/html/${setup_build_start_time}_${unique_job_ident}"
 
 # Create the moodledata dir
 mkdir -p "${datadir}"

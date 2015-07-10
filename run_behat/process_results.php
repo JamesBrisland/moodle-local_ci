@@ -185,10 +185,12 @@ foreach ($failed_tests as $test_file => $info) {
     $mail->addReplyTo('no-reply@no-reply.com', 'VLE Jenkins');
 
     if (!empty($config_data['email_override'])) {
-        $mail->addAddress($config_data['email_override']);
+        list($name, $email) = explode('<', str_replace('>', '', $config_data['email_override']));
+        $mail->addAddress(trim($email), trim($name));
     } else {
         foreach ($info['emails'] as $email) {
-            $mail->addAddress($email);
+            list($name, $email) = explode('<', str_replace('>', '', $email));
+            $mail->addAddress(trim($email), trim($name));
         }
     }
 

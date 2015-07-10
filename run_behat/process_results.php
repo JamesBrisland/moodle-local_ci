@@ -189,6 +189,7 @@ foreach ($failed_tests as $test_file => $info) {
     $mail->FromName = 'VLE Jenkins';
     $mail->addReplyTo('no-reply@no-reply.com', 'VLE Jenkins');
 
+    /*
     if (!empty($config_data['email_override'])) {
         list($name, $email) = explode('<', str_replace('>', '', $config_data['email_override']));
         $mail->addAddress(trim($email), trim($name));
@@ -198,6 +199,8 @@ foreach ($failed_tests as $test_file => $info) {
             $mail->addAddress(trim($email), trim($name));
         }
     }
+    */
+    $mail->addAddress('james.brisland@open.ac.uk', 'James Brisland');
 
     $mail->Subject = $email_subject;
     $mail->Body = $email_text;

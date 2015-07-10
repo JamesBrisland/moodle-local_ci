@@ -144,15 +144,15 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
 //- Now we have a list of failed tests along with screenshots
 $subject = "{$config_data['behat_job_name']} - Failed Test - [BEHAT_FEATURE_PATH]";
 $text = <<<EOT
-{$config_data['behat_job_name']} - Failed Test - [BEHAT_FEATURE_PATH].
-
-Test run on branch {$config_data['gitbranch']}.
-
-Output folder \\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]
-Screenshot/HTML folder: \\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\screenshots
-
-Please have a look at the output XML file for this test \\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML] for more details
-
+{$config_data['behat_job_name']} - Failed Test - [BEHAT_FEATURE_PATH].<br/>
+<br/>
+Test run on branch {$config_data['gitbranch']}.<br/>
+<br/>
+Output folder <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]">All Output</a><br/>
+Screenshot/HTML folder: <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\screenshots">Screenshots</a><br/>
+<br/>
+Please have a look at the output XML file for this test <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML]">[BEHAT_FEATURE_PATH]</a> for more details<br/>
+<br/>
 [FEATURE_SCREENSHOTS]
 EOT;
 
@@ -163,9 +163,9 @@ foreach ($failed_tests as $test_file => $info) {
     $email_text = str_replace('[BUILD_NUMBER]', $config_data['behat_build_number'], $email_text);
 
     if (!empty($info['screenshots'])) {
-        $screenshots = "Potential Matched Screenshot/HTML files for this test:\n";
+        $screenshots = "Potential Matched Screenshot/HTML files for this test:<br/>\n";
         foreach ($info['screenshots'] as $screenshot) {
-            $screenshots .= '\\\\vle-auto-test\\behat\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . "\n";
+            $screenshots .= '\\\\vle-auto-test\\behat\\' . $config_data['behat_job_name'] . '\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . '">' . $screenshot . "</a><br/>\n";
         }
         $email_text = str_replace('[FEATURE_SCREENSHOTS]', $screenshots, $email_text);
     } else {
@@ -177,6 +177,7 @@ foreach ($failed_tests as $test_file => $info) {
 
     $mail = new PHPMailer();
     $mail->isSMTP();
+    $mail->isHTML();
     $mail->Host = 'smtpmail.open.ac.uk';
 
     //- For some reason I cannot use an open.ac.uk email address as the server tries to validate the address

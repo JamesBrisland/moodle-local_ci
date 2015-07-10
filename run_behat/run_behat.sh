@@ -15,7 +15,7 @@ echo "behat_build_number=${BUILD_NUMBER}" >> $config_file_path
 echo "behat_job_name=\"${JOB_NAME}\"" >> $config_file_path
 
 # Check for tags
-if [[ (-z "${behat_tags_override}" || "${behat_tags_override}" == " ") && (-z "${behat_do_full_run}" || "${behat_do_full_run}" == " ") && (-z "${behat_tags_partial_run}" || "${behat_tags_partial_run}" == " ") ]] ; then
+if [[ (-z "${behat_tags_override}" || "${behat_tags_override}" == " ") && (-z "${behat_do_full_run}" || "${behat_do_full_run}" == " ") && (-z "${behat_tags_partial_run}" || "${behat_tags_partial_run}" == " ") && (-z "${behat_by_files_run}" || "${behat_by_files_run}" == " ") ]] ; then
     echo "No tags specified. Behat execution cancelled. Exiting."
     exit 1;
 fi
@@ -139,21 +139,27 @@ if [ $exitstatus -eq 0 ]; then
     echo "Unsetting proxy as it's not needed when runnig behat tests locally. Moodle config has proxy settings in for anything Moodle does."
     echo -e "\n\n---------------------------------------------------------------\n\n"
 
-    if [ "${behat_do_full_run}" = "yes" ]; then
-        tags=${behat_tags_full_run}
+    if [ -z $behat_by_files_run ]; then
+        if [ "${behat_do_full_run}" = "yes" ]; then
+            tags=${behat_tags_full_run}
+        else
+            tags=${behat_tags_partial_run}
+        fi
+
+        # Check to see if we have an override
+        if [ ! -z "${behat_tags_override}" -a "${behat_tags_override}" != " " ]; then
+            tags=${behat_tags_override}
+        fi
+
+        echo -e "====== Executing tags ${tags} ======\n\n"
+
+        run_files_or_tags="--tags=${tags}"
     else
-        tags=${behat_tags_partial_run}
+        run_files_or_tags="$behat_by_files_run"
     fi
-
-    # Check to see if we have an override
-    if [ ! -z "${behat_tags_override}" -a "${behat_tags_override}" != " " ]; then
-        tags=${behat_tags_override}
-    fi
-
-    echo -e "====== Executing tags ${tags} ======\n\n"
 
     # This will output the moodle_progress format to the console and write moodle_progress, behat pretty and junit formats to files
-    ${gitdir}/vendor/bin/behat -v --config "${datadirbehat}/behat/behat.yml" --format moodle_progress,moodle_progress,pretty,junit --out=,"${behat_pretty_moodle_output}","${behat_pretty_full_output}","${junit_output_folder}" --tags=${tags} --profile=chrome
+    ${gitdir}/vendor/bin/behat -v --config "${datadirbehat}/behat/behat.yml" --format moodle_progress,moodle_progress,pretty,junit --out=,"${behat_pretty_moodle_output}","${behat_pretty_full_output}","${junit_output_folder}" --profile=chrome ${run_files_or_tags}
     exitstatus=${PIPESTATUS[0]}
     echo -e "\nBehat finished. Exit status ${exitstatus}"
 fi

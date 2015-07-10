@@ -148,12 +148,14 @@ $text = <<<EOT
 <br/>
 Test run on branch {$config_data['gitbranch']}.<br/>
 <br/>
-Output folder <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]">All Output</a><br/>
-Screenshot/HTML folder: <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\screenshots">Screenshots</a><br/>
+Output folder <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]">{$config_data['behat_job_name']}\\[BUILD_NUMBER]</a><br/>
+Screenshot/HTML folder: <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\screenshots">{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\screenshots</a><br/>
 <br/>
-Please have a look at the output XML file for this test <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML]">[BEHAT_FEATURE_PATH]</a> for more details<br/>
+For more details please have a look at the output XML file for this test <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML]">[BEHAT_FEATURE_PATH]</a><br/>
 <br/>
 [FEATURE_SCREENSHOTS]
+<br/>
+[RUN_INFO]
 EOT;
 
 foreach ($failed_tests as $test_file => $info) {
@@ -165,12 +167,14 @@ foreach ($failed_tests as $test_file => $info) {
     if (!empty($info['screenshots'])) {
         $screenshots = "Potential Matched Screenshot/HTML files for this test:<br/>\n";
         foreach ($info['screenshots'] as $screenshot) {
-            $screenshots .= '<a href="\\\\vle-auto-test\\behat\\' . $config_data['behat_job_name'] . '\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . '">' . $screenshot . "</a><br/>\n";
+            $screenshots .= '<a href="\\\\vle-auto-test\\behat\\' . $config_data['behat_job_name'] . '\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . '">' . $screenshot . "</a><br/><br/>\n\n";
         }
         $email_text = str_replace('[FEATURE_SCREENSHOTS]', $screenshots, $email_text);
     } else {
         $email_text = str_replace('[FEATURE_SCREENSHOTS]', 'We were unable to match up any screenshots/html files to this failed test.', $email_text);
     }
+
+    $email_text = str_replace('[RUN_INFO]', '', $email_text);
 
     //- Now email using PHPMailer
     include_once(__DIR__ . '/PHPMailer-5.2.10/PHPMailerAutoload.php');

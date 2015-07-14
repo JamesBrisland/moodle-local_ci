@@ -155,7 +155,10 @@ if [ $exitstatus -eq 0 ]; then
 
         run_files_or_tags="--tags=${tags}"
     else
-        run_files_or_tags="$behat_by_files_run"
+        #- Remove all whitespace and replace with " ${gitdir}"
+
+        behat_by_files_run=${behat_by_files_run// / $gitdir\/}
+        run_files_or_tags="${gitdir}\/$behat_by_files_run"
     fi
 
     # This will output the moodle_progress format to the console and write moodle_progress, behat pretty and junit formats to files

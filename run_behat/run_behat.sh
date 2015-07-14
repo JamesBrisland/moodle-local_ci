@@ -159,9 +159,11 @@ if [ $exitstatus -eq 0 ]; then
     fi
 
     # This will output the moodle_progress format to the console and write moodle_progress, behat pretty and junit formats to files
-    ${gitdir}/vendor/bin/behat -v --config "${datadirbehat}/behat/behat.yml" --format moodle_progress,moodle_progress,pretty,junit --out=,"${behat_pretty_moodle_output}","${behat_pretty_full_output}","${junit_output_folder}" --profile=chrome ${run_files_or_tags}
+    pushd ${gitdir}
+    vendor/bin/behat -v --config "${datadirbehat}/behat/behat.yml" --format moodle_progress,moodle_progress,pretty,junit --out=,"${behat_pretty_moodle_output}","${behat_pretty_full_output}","${junit_output_folder}" --profile=chrome ${run_files_or_tags}
     exitstatus=${PIPESTATUS[0]}
     echo -e "\nBehat finished. Exit status ${exitstatus}"
+    popd
 fi
 
 # Look for any stack sent to output if behat returned success as it should lead to failed execution

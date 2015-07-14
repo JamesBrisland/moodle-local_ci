@@ -31,8 +31,7 @@ composer_init_output=${WORKSPACE}/${BUILD_NUMBER}/composer_init.txt
 behat_init_output=${WORKSPACE}/${BUILD_NUMBER}/behat_init.txt
 behat_pretty_full_output=${WORKSPACE}/${BUILD_NUMBER}/behat_pretty_full.txt
 behat_pretty_moodle_output=${WORKSPACE}/${BUILD_NUMBER}/behat_pretty_moodle.txt
-selenium_hub_output=${WORKSPACE}/${BUILD_NUMBER}/selenium_hub_output.txt
-selenium_node_output=${WORKSPACE}/${BUILD_NUMBER}/selenium_node_output.txt
+selenium_output=${WORKSPACE}/${BUILD_NUMBER}/selenium.txt
 
 # file where results will be sent
 junit_output_folder=${WORKSPACE}/${BUILD_NUMBER}/behat_junit_xml
@@ -126,19 +125,12 @@ if [ $exitstatus -eq 0 ]; then
     echo Datadir in ${datadirbehat}
     echo Behat init output: ${behat_init_output}
     echo Behat pretty output: ${behat_pretty_output}
-    echo Selenium Hub output: ${selenium_hub_output}
-    echo Selenium Node output: ${selenium_node_output}
+    echo Selenium output: ${selenium_output}
     echo -e "\n\n---------------------------------------------------------------\n\n"
     date
     echo -e "\n\n---------------------------------------------------------------\n\n"
     echo "Launching Selenium and sleeping for 2 seconds to allow time for launch"
-    #/opt/selenium/selenium_hub.sh > "${selenium_hub_output}" 2>&1 &
-    #/opt/selenium/selenium_node.sh > "${selenium_node_output}" 2>&1 &
-    /opt/selenium/selenium_hub.sh
-    /opt/selenium/selenium_node.sh
-    # Replace the port number for selenium from 4444 to the current node
-    echo "Setting selenium node port to 55${DISPLAY}"
-    sed -i -e "s/4444/55${DISPLAY}/g" "${datadirbehat}/behat/behat.yml"
+    /opt/selenium/selenium.sh > "${selenium_output}" 2>&1 &
     sleep 2
     # Remove the proxy for behat - for some reason it's hit and miss as to when it works
     unset http_proxy
@@ -168,8 +160,6 @@ if [ $exitstatus -eq 0 ]; then
         behat_by_files_run=${behat_by_files_run// / $gitdir\/}
         run_files_or_tags="${gitdir}/$behat_by_files_run"
     fi
-
-    #- Tweak behat YML file to specific selenium WD port
 
     # This will output the moodle_progress format to the console and write moodle_progress, behat pretty and junit formats to files
     pushd ${gitdir}

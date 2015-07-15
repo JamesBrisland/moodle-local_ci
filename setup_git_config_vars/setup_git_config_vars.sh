@@ -21,3 +21,6 @@ fi
 #- on a unique checkout of the code
 echo -e "Setup apache www folder /var/www/html/${setup_build_start_time}_${unique_job_ident}\n\n"
 cp -pR ${gitdir} "/var/www/html/${setup_build_start_time}_${unique_job_ident}"
+
+# Replace the gitdir in the config with the new directory
+sed -i "s/^gitdir=.*/gitdir=\/var\/www\/html\/${setup_build_start_time}_${unique_job_ident}/" $config_file_path

@@ -257,6 +257,7 @@ rm -Rf ${gitdir}
 rm -f ${config_file_path}
 rm -fr ${datadir}
 rm -fr ${datadirbehat}
+rm -fr ${behatfaildump}
 
 # If arrived here, return the exitstatus of the php execution
 exit $exitstatus

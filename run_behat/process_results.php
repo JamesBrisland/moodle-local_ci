@@ -7,7 +7,7 @@ $longops = array("workspace::");
 $options = getopt($shortops, $longops);
 
 if (empty($options['w']) && empty($options['workspace'])) {
-    //- Error, no workspace, cannot parse
+    echo "ERROR: no workspace path passed to script";
     exit(1);
 } else {
     $workspace = !empty($options['workspace']) ? $options['workspace'] : $options['w'];
@@ -53,10 +53,14 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
     // Grab the name of the file. In the format TEST-[PATH_TO_WWW_WITH_SLASHES_REPLACED_WITH_UNDERSCORES_ALONG_WITH_MOODLE_FILE_PATH].xml
     // e.g. TEST-var-www-html-20150715_131106_922_ouvle_daily_partial-mod-oucontent-tests-behat-oucontent_basic.xml
     $file_name = $fileInfo->getFilename();
+    echo $file_name . "\n";
     $file_path = $fileInfo->getPath() . DIRECTORY_SEPARATOR . $file_name;
+    echo $file_path . "\n";
 
     $gitdir_with_slashes_replaced = str_replace( DIRECTORY_SEPARATOR, '-', $config_data['gitdir'] ) . DIRECTORY_SEPARATOR;
+    echo $gitdir_with_slashes_replaced . "\n";
     $success_filename = str_replace( 'TEST' . $gitdir_with_slashes_replaced, '', $file_name );
+    echo $success_filename . "\n";
 
     if (substr_count(file_get_contents($file_path), '</testsuite>') > 1) {
         echo 'Error: File ' . $fileInfo->getFilename() . ' has more than one testsuite. This should not happen! Something strange has gone wrong. Skipping test.';

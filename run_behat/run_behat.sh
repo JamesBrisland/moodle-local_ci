@@ -7,6 +7,7 @@ set +e
 echo "Unique Job ID: ${unique_job_ident}"
 echo "Setup build start time: ${setup_build_start_time}"
 echo "Display: ${DISPLAY}"
+export
 
 # Include the config file!
 config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${unique_job_ident}
@@ -253,10 +254,10 @@ if [ ${exitstatus} -ne 0 ]; then
 fi
 
 echo "Cleanup"
-rm -Rf ${gitdir}
-rm -f ${config_file_path}
-rm -fr ${datadir}
-rm -fr ${datadirbehat}
+#rm -Rf ${gitdir}
+#rm -f ${config_file_path}
+#rm -fr ${datadir}
+#rm -fr ${datadirbehat}
 
 # If arrived here, return the exitstatus of the php execution
 exit $exitstatus

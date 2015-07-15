@@ -135,7 +135,9 @@ if [ $exitstatus -eq 0 ]; then
     #/opt/selenium/selenium_hub.sh > "${selenium_hub_output}" 2>&1 &
     #/opt/selenium/selenium_node.sh > "${selenium_node_output}" 2>&1 &
     /opt/selenium/selenium_hub.sh
-    /opt/selenium/selenium_node.sh
+    /opt/selenium/selenium_node.shk
+
+    #- Tweak behat YML file to specific selenium WD port
     # Replace the port number for selenium from 4444 to the current node
     echo "Setting selenium node port to 55${DISPLAY}"
     sed -i -e "s/4444/55${DISPLAY}/g" "${datadirbehat}/behat/behat.yml"
@@ -144,7 +146,7 @@ if [ $exitstatus -eq 0 ]; then
     unset http_proxy
     unset https_proxy
     unset no_proxy
-    echo "Unsetting proxy as it's not needed when runnig behat tests locally. Moodle config has proxy settings in for anything Moodle does."
+    echo "Unsetting proxy as it's not needed when running behat tests locally. Moodle config has proxy settings in for anything Moodle does."
     echo -e "\n\n---------------------------------------------------------------\n\n"
 
     if [ -z $behat_by_files_run ]; then
@@ -168,8 +170,6 @@ if [ $exitstatus -eq 0 ]; then
         behat_by_files_run=${behat_by_files_run// / $gitdir\/}
         run_files_or_tags="${gitdir}/$behat_by_files_run"
     fi
-
-    #- Tweak behat YML file to specific selenium WD port
 
     # This will output the moodle_progress format to the console and write moodle_progress, behat pretty and junit formats to files
     pushd ${gitdir}

@@ -140,8 +140,8 @@ if [ $exitstatus -eq 0 ]; then
     echo "Launching Selenium and sleeping for 2 seconds to allow time for launch"
     #/opt/selenium/selenium_hub.sh > "${selenium_hub_output}" 2>&1 &
     #/opt/selenium/selenium_node.sh > "${selenium_node_output}" 2>&1 &
-    /opt/selenium/selenium_hub.sh
-    /opt/selenium/selenium_node.shk
+    /opt/selenium/selenium_hub.sh &
+    /opt/selenium/selenium_node.sh &
 
     #- Tweak behat YML file to specific selenium WD port
     # Replace the port number for selenium from 4444 to the current node

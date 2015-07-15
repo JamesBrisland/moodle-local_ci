@@ -186,35 +186,42 @@ fi
 
 # Look for any stack sent to output if behat returned success as it should lead to failed execution
 if [ $exitstatus -eq 0 ]; then
-    # notices/warnings/errors under simpletest (behat captures them)
-    stacks=$(grep -r 'Call Stack:' "${junit_output_folder}" | wc -l)
+    # Check to see if we had no steps.. if so fail!
+    no_steps=$(grep 'No steps' "${behat_pretty_moodle_output}" | wc -l)
     if [[ ${stacks} -gt 0 ]]; then
-        echo -e "\n\nERROR: uncontrolled notice/warning/error output on execution."
+        echo -e "\n\nERROR: no steps run. Marking build as failed."
         exitstatus=1
-    fi
-    # debugging messages
-    debugging=$(grep -r 'Debugging:' "${junit_output_folder}" | wc -l)
-    if [[ ${debugging} -gt 0 ]]; then
-        echo -e "\n\nERROR: uncontrolled debugging output on execution."
-        exitstatus=1
-    fi
-    # general backtrace information
-    backtrace=$(grep -r 'line [0-9]* of .*: call to' "${junit_output_folder}" | wc -l)
-    if [[ ${backtrace} -gt 0 ]]; then
-        echo -e "\n\nERROR: uncontrolled backtrace output on execution."
-        exitstatus=1
-    fi
-    # anything exceptional (not dots and numbers) in the execution lines.
-    exceptional=$(grep -rP '^\.|%\)$' "${junit_output_folder}" | grep -vP '^[\.SIEF]*[ \d/\(\)%]*$' | wc -l)
-    if [[ ${exceptional} -gt 0 ]]; then
-        echo -e "\n\nERROR: uncontrolled exceptional output on execution."
-        exitstatus=1
-    fi
-    # Exceptions.
-    exception=$(grep -r 'Exception' "${junit_output_folder}" | wc -l)
-    if [[ ${exception} -gt 0 ]]; then
-        echo -e "\n\nERROR: exception during behat run."
-        exitstatus=1
+    else
+        # notices/warnings/errors under simpletest (behat captures them)
+        stacks=$(grep -r 'Call Stack:' "${junit_output_folder}" | wc -l)
+        if [[ ${stacks} -gt 0 ]]; then
+            echo -e "\n\nERROR: uncontrolled notice/warning/error output on execution."
+            exitstatus=1
+        fi
+        # debugging messages
+        debugging=$(grep -r 'Debugging:' "${junit_output_folder}" | wc -l)
+        if [[ ${debugging} -gt 0 ]]; then
+            echo -e "\n\nERROR: uncontrolled debugging output on execution."
+            exitstatus=1
+        fi
+        # general backtrace information
+        backtrace=$(grep -r 'line [0-9]* of .*: call to' "${junit_output_folder}" | wc -l)
+        if [[ ${backtrace} -gt 0 ]]; then
+            echo -e "\n\nERROR: uncontrolled backtrace output on execution."
+            exitstatus=1
+        fi
+        # anything exceptional (not dots and numbers) in the execution lines.
+        exceptional=$(grep -rP '^\.|%\)$' "${junit_output_folder}" | grep -vP '^[\.SIEF]*[ \d/\(\)%]*$' | wc -l)
+        if [[ ${exceptional} -gt 0 ]]; then
+            echo -e "\n\nERROR: uncontrolled exceptional output on execution."
+            exitstatus=1
+        fi
+        # Exceptions.
+        exception=$(grep -r 'Exception' "${junit_output_folder}" | wc -l)
+        if [[ ${exception} -gt 0 ]]; then
+            echo -e "\n\nERROR: exception during behat run."
+            exitstatus=1
+        fi
     fi
 fi
 

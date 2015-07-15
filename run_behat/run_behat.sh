@@ -3,11 +3,17 @@
 # Don't be strict. Script has own error control handle
 set +e
 
+# Check params passed down
+echo "Unique Job ID: ${unique_job_ident}"
+echo "Setup build start time: ${setup_build_start_time}"
+echo "Display: ${DISPLAY}"
+
 # Include the config file!
-echo "00. Setup Job start time: ${setup_build_start_time}"
-echo Unique Job Ident: ${unique_job_ident}
 config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${unique_job_ident}
 . ${config_file_path}
+
+# Grab the display number removing the : from the front
+display_number=${DISPLAY/:/}
 
 # Add the behat_workspace and build number to the config file
 echo "behat_workspace=\"${WORKSPACE}\"" >> $config_file_path
@@ -139,8 +145,8 @@ if [ $exitstatus -eq 0 ]; then
 
     #- Tweak behat YML file to specific selenium WD port
     # Replace the port number for selenium from 4444 to the current node
-    echo "Setting selenium node port to 55${DISPLAY}"
-    sed -i -e "s/4444/55${DISPLAY}/g" "${datadirbehat}/behat/behat.yml"
+    echo "Setting selenium node port to 55${display_number}"
+    sed -i -e "s/4444/55${display_number}/g" "${datadirbehat}/behat/behat.yml"
     sleep 2
     # Remove the proxy for behat - for some reason it's hit and miss as to when it works
     unset http_proxy

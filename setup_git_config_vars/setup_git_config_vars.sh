@@ -3,9 +3,10 @@
 # Don't be strict. Script has own error control handle
 set +e
 
-# Include the config file!
-echo "00. Setup Job start time: ${setup_build_start_time}"
-echo Unique Job Ident: ${unique_job_ident}
+# Check params passed down
+echo "Unique Job ID: ${unique_job_ident}"
+echo "Setup build start time: ${setup_build_start_time}"
+
 config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${unique_job_ident}
 . ${config_file_path}
 

@@ -6,10 +6,14 @@ set +e
 jenkins_vars=$(( set -o posix ; set ) | grep ".*jenkins_.*" )
 
 mkdir ${JENKINS_HOME}/git_repositories/config_files
+
+# Check params passed down
+echo "Unique Job ID: ${unique_job_ident}"
+echo "Setup build start time: ${setup_build_start_time}"
+
 # Include the config file!
-echo "00. Setup Job start time: ${setup_build_start_time}"
-echo Unique Job Ident: ${unique_job_ident}
 config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${unique_job_ident}
+. ${config_file_path}
 
 touch $config_file_path
 

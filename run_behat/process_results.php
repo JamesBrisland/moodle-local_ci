@@ -17,6 +17,8 @@ if (empty($options['w']) && empty($options['workspace'])) {
 //- as it's not actually an ini file, but it's close enough for us to extract the data we need
 $config_data = @parse_ini_file($workspace . DIRECTORY_SEPARATOR . 'config');
 print_r($config_data);
+$job_name = $config_data['behat_job_name'];
+$job_name_path = basename( $config_data['behat_workspace'] );
 
 $gitdir = str_replace('/', DIRECTORY_SEPARATOR, $config_data['gitdir']);
 
@@ -143,16 +145,16 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
 }
 
 //- Now we have a list of failed tests along with screenshots
-$subject = "{$config_data['behat_job_name']} - Failed Test - [BEHAT_FEATURE_PATH]";
+$subject = "{$job_name} - Failed Test - [BEHAT_FEATURE_PATH]";
 $text = <<<EOT
-{$config_data['behat_job_name']} - Failed Test - [BEHAT_FEATURE_PATH].<br/>
+{$job_name} - Failed Test - [BEHAT_FEATURE_PATH].<br/>
 <br/>
 Test run on branch {$config_data['gitbranch']}.<br/>
 <br/>
-Output folder <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]">{$config_data['behat_job_name']}\\[BUILD_NUMBER]</a><br/>
-Screenshot/HTML folder: <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\screenshots">{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\screenshots</a><br/>
+Output folder <a href="\\\\vle-auto-test\\behat\\{$job_name_path}\\[BUILD_NUMBER]">{$job_name_path}\\[BUILD_NUMBER]</a><br/>
+Screenshot/HTML folder: <a href="\\\\vle-auto-test\\behat\\{$job_name_path}\\[BUILD_NUMBER]\\screenshots">{$job_name_path}\\[BUILD_NUMBER]\\screenshots</a><br/>
 <br/>
-For more details please have a look at the output XML file for this test <a href="\\\\vle-auto-test\\behat\\{$config_data['behat_job_name']}\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML]">[BEHAT_FEATURE_PATH]</a><br/>
+For more details please have a look at the output XML file for this test <a href="\\\\vle-auto-test\\behat\\{$job_name_path}\\[BUILD_NUMBER]\\behat_junit_xml\\[BEHAT_FEATURE_XML]">[BEHAT_FEATURE_PATH]</a><br/>
 <br/>
 [FEATURE_SCREENSHOTS]
 <br/>
@@ -168,7 +170,7 @@ foreach ($failed_tests as $test_file => $info) {
     if (!empty($info['screenshots'])) {
         $screenshots = "Potential Matched Screenshot/HTML files for this test:<br/>\n";
         foreach ($info['screenshots'] as $screenshot) {
-            $screenshots .= '<a href="\\\\vle-auto-test\\behat\\' . $config_data['behat_job_name'] . '\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . '">' . $screenshot . "</a><br/><br/>\n\n";
+            $screenshots .= '<a href="\\\\vle-auto-test\\behat\\' . $job_name_path . '\\' . $config_data['behat_build_number'] . '\\screenshots\\' . $screenshot . '">' . $screenshot . "</a><br/><br/>\n\n";
         }
         $email_text = str_replace('[FEATURE_SCREENSHOTS]', $screenshots, $email_text);
     } else {

@@ -57,7 +57,7 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
     $file_path = $fileInfo->getPath() . DIRECTORY_SEPARATOR . $file_name;
     echo $file_path . "\n";
 
-    $gitdir_with_slashes_replaced = str_replace( DIRECTORY_SEPARATOR, '-', $config_data['gitdir'] ) . DIRECTORY_SEPARATOR;
+    $gitdir_with_slashes_replaced = str_replace( DIRECTORY_SEPARATOR, '-', $config_data['gitdir'] . DIRECTORY_SEPARATOR )
     echo $gitdir_with_slashes_replaced . "\n";
     $success_filename = str_replace( 'TEST' . $gitdir_with_slashes_replaced, '', $file_name );
     echo $success_filename . "\n";

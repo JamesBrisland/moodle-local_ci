@@ -31,7 +31,7 @@ mkdir "${WORKSPACE}/${BUILD_NUMBER}"
 
 # Folder for details of successful runs. Will contain a file for each of the behat features along with the latest commit
 # when the last successful run was
-mkdir "${WORKSPACE}/successful"
+mkdir -p "${WORKSPACE}/../behat_success_xml_${unique_job_ident}"
 
 composer_init_output=${WORKSPACE}/${BUILD_NUMBER}/composer_init.txt
 behat_init_output=${WORKSPACE}/${BUILD_NUMBER}/behat_init.txt

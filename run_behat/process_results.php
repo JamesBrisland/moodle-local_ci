@@ -43,7 +43,8 @@ $commit_id_three_days_ago = $output[0];
 
 //- Loop through all the XML files and find ones with failures
 $failed_tests = [];
-$success_dir = $workspace . DIRECTORY_SEPARATOR . '/../successful';
+# workspace = /var/lib/jenkins/workspace/[JOB NAME]/[BUILD_NUMBER]
+$success_dir = $workspace . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'behat_success_xml_' . $config_data['unique_job_ident'];
 foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_xml') as $fileInfo) {
     if ($fileInfo->isDot()) continue;
 

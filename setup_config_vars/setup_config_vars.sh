@@ -26,6 +26,11 @@ echo export http_proxy=wwwcache.open.ac.uk:80 >> $config_file_path
 echo export https_proxy=wwwcache.open.ac.uk:80 >> $config_file_path
 echo export no_proxy=localhost,127.0.0.0/8,127.0.1.1,127.0.1.1*,local.home >> $config_file_path
 
+# Put these vars manually into the config file even though they are passed about by jenkins because they make the config
+# file path name I will need them in the php script later
+echo "unique_job_ident=\"${unique_job_ident}\"" >> $config_file_path
+echo "setup_build_start_time=\"${setup_build_start_time}\"" >> $config_file_path
+
 # Setup all the jenkins_ vars in the config file
 for i in $jenkins_vars;
 do

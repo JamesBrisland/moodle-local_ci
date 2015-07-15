@@ -187,7 +187,7 @@ fi
 if [ $exitstatus -eq 0 ]; then
     # Check to see if we had no steps.. if so fail!
     no_steps=$(grep 'No steps' "${behat_pretty_moodle_output}" | wc -l)
-    if [[ ${stacks} -gt 0 ]]; then
+    if [[ ${no_steps} -gt 0 ]]; then
         echo -e "\n\nERROR: no steps run. Marking build as failed."
         exitstatus=1
     else

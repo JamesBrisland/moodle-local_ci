@@ -56,7 +56,7 @@ foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_x
     $file_path = $fileInfo->getPath() . DIRECTORY_SEPARATOR . $file_name;
 
     $gitdir_with_slashes_replaced = str_replace( DIRECTORY_SEPARATOR, '-', $config_data['gitdir'] ) . DIRECTORY_SEPARATOR;
-    $success_filename = str_replace( 'TEST-'.$gitdir_with_slashes_replaced, '', $file_name );
+    $success_filename = str_replace( 'TEST' . $gitdir_with_slashes_replaced, '', $file_name );
 
     if (substr_count(file_get_contents($file_path), '</testsuite>') > 1) {
         echo 'Error: File ' . $fileInfo->getFilename() . ' has more than one testsuite. This should not happen! Something strange has gone wrong. Skipping test.';

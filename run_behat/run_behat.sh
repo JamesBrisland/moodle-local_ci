@@ -111,7 +111,6 @@ text=$( echo "${text}" | perl -0pe "s!%%EXTRACONFIG%%!${extraconfig}!g" )
 
 # Save the config.php into destination
 echo "${text}" > "${gitdir}/config.php"
-cp "${gitdir}/config.php" "/var/www/html/${setup_build_start_time}_${unique_job_ident}"
 
 # Create the moodledata dir
 mkdir -p "${datadir}"
@@ -247,11 +246,10 @@ cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}"
 cp "${datadirbehat}/behat/behat.yml" "${WORKSPACE}/${BUILD_NUMBER}"
 chmod -R 775 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 echo "Cleanup"
-#rm -Rf /var/www/html/${setup_build_start_time}_${unique_job_ident}
-#rm -f ${config_file_path}
-#rm -f ${gitdir}/config.php
-#rm -fr ${datadir}
-#rm -fr ${datadirbehat}
+rm -Rf ${gitdir}
+rm -f ${config_file_path}
+rm -fr ${datadir}
+rm -fr ${datadirbehat}
 
 if [ ${exitstatus} -ne 0 ]; then
     # There has been some errors. Process them

@@ -137,11 +137,9 @@ if [ $exitstatus -eq 0 ]; then
     echo -e "\n\n---------------------------------------------------------------\n\n"
     date
     echo -e "\n\n---------------------------------------------------------------\n\n"
-    echo "Launching Selenium and sleeping for 2 seconds to allow time for launch"
-    #/opt/selenium/selenium_hub.sh > "${selenium_hub_output}" 2>&1 &
-    #/opt/selenium/selenium_node.sh > "${selenium_node_output}" 2>&1 &
-    /opt/selenium/selenium_hub.sh &
-    /opt/selenium/selenium_node.sh &
+    echo "Launching Selenium (Hub and Node as needed) and sleeping for 2 seconds to allow time for launch"
+    /opt/selenium/selenium_hub.sh > "${selenium_hub_output}" 2>&1 &
+    /opt/selenium/selenium_node.sh > "${selenium_node_output}" 2>&1 &
 
     #- Tweak behat YML file to specific selenium WD port
     # Replace the port number for selenium from 4444 to the current node
@@ -239,6 +237,7 @@ mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 find "${behatfaildump}" -exec cp -p {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
 cp ${config_file_path} "${WORKSPACE}/${BUILD_NUMBER}/config"
 cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}"
+cp "${datadirbehat}/behat/behat.yml" "${WORKSPACE}/${BUILD_NUMBER}"
 chmod -R 775 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 echo "Cleanup"
 #rm -Rf /var/www/html/${setup_build_start_time}_${unique_job_ident}

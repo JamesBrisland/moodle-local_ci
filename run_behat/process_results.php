@@ -50,18 +50,24 @@ $success_dir = $workspace . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '
 foreach (new DirectoryIterator($workspace . DIRECTORY_SEPARATOR . 'behat_junit_xml') as $fileInfo) {
     if ($fileInfo->isDot()) continue;
 
-    $file_path = $fileInfo->getPath() . DIRECTORY_SEPARATOR . $fileInfo->getFilename();
+    // Grab the name of the file. In the format TEST-[PATH_TO_WWW_WITH_SLASHES_REPLACED_WITH_UNDERSCORES_ALONG_WITH_MOODLE_FILE_PATH].xml
+    // e.g. TEST-var-www-html-20150715_131106_922_ouvle_daily_partial-mod-oucontent-tests-behat-oucontent_basic.xml
+    $file_name = $fileInfo->getFilename();
+    $file_path = $fileInfo->getPath() . DIRECTORY_SEPARATOR . $file_name;
 
-    //- Check to see if this file has a failure in
-    $xml = simplexml_load_file($file_path);
+    $gitdir_with_slashes_replaced = str_replace( DIRECTORY_SEPARATOR, '-', $config_data['gitdir'] ) . DIRECTORY_SEPARATOR;
+    $success_filename = str_replace( 'TEST-'.$gitdir_with_slashes_replaced, '', $file_name );
 
     if (substr_count(file_get_contents($file_path), '</testsuite>') > 1) {
         echo 'Error: File ' . $fileInfo->getFilename() . ' has more than one testsuite. This should not happen! Something strange has gone wrong. Skipping test.';
         continue;
     }
 
+    //- Check to see if this file has a failure in
+    $xml = simplexml_load_file($file_path);
+
     $failures_attribute = !empty($xml->attributes()->failures) ? (int)$xml->attributes()->failures : 0;
-    $last_successful_run_file = $success_dir . DIRECTORY_SEPARATOR . $fileInfo->getFilename();
+    $last_successful_run_file = $success_dir . DIRECTORY_SEPARATOR . $success_filename;
     $last_successful_run_commit_id = null;
 
     if ($failures_attribute == 0) {

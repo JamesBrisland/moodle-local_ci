@@ -245,17 +245,18 @@ cp ${config_file_path} "${WORKSPACE}/${BUILD_NUMBER}/config"
 cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}"
 cp "${datadirbehat}/behat/behat.yml" "${WORKSPACE}/${BUILD_NUMBER}"
 chmod -R 775 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
-echo "Cleanup"
-rm -Rf ${gitdir}
-rm -f ${config_file_path}
-rm -fr ${datadir}
-rm -fr ${datadirbehat}
 
 if [ ${exitstatus} -ne 0 ]; then
     # There has been some errors. Process them
     echo "Errors found during Behat run. Processing and emailing."
     php /var/lib/jenkins/git_repositories/ci_scripts/run_behat/process_results.php -w="${WORKSPACE}/${BUILD_NUMBER}"
 fi
+
+echo "Cleanup"
+rm -Rf ${gitdir}
+rm -f ${config_file_path}
+rm -fr ${datadir}
+rm -fr ${datadirbehat}
 
 # If arrived here, return the exitstatus of the php execution
 exit $exitstatus

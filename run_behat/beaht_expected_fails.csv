@@ -1,0 +1,2 @@
+blocks/ocwremix/tests/behat/works_ocwremix_rss.feature,background,"And I upload ""blocks/ocwremix/tests/fixtures/collaborator.xml"" file to ""Use role preset"" filemanager"
+mod/oucontent/tests/behat/oucontent_downloadsbox.feature,Restrictions column on all downloads page should indicate availability,"And I upload ""mod/oucontent/tests/fixtures/files/2.epub"" file to ""Ebook (EPUB)"" filemanager"

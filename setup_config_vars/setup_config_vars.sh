@@ -37,3 +37,17 @@ do
     # Replaces the FIRST jenkins_ with nothing and puts it into the config file
     echo ${i/jenkins_/} >> $config_file_path
 done
+
+# Before we do anything more check to see if we have multi adhoc runs to file off (multi jenkins_files_to_run)
+# If we do trigger all and restart with the same params asside from the files_to_run just being a single run
+OIFS=$IFS
+IFS=';'
+arr=($jenkins_behat_by_files_run)
+IFS=$OIFS
+uniq=($(printf "%s\n" "${arr[@]}" | sort -u));
+
+if [[ ${#uniq[@]} > 1  ]]; then
+    echo More than one file to be run. Firing off scripts with all params
+fi
+
+exit 1;

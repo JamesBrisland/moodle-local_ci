@@ -25,22 +25,18 @@ class BehatTest extends Test
     /** @var BehatStep[] */
     public $FailedSteps = [];
 
-    public function should_send_email( BehatTest $test )
+    public function should_send_email(BehatTest $test)
     {
         //- Check to see if we should send the email out to the file editing user. It will send to the user if:
         //-   1 - We find a step in the behat_moodle_pretty output that isn't a known failure for this test
         //-   2 - We don't find any steps in the behat_moodle_pretty output (most likley because the step was undefined)
         $total_steps = 0;
         $known_failures = 0;
-        if( !empty( $test->FailedSteps ) )
-        {
-            foreach( $test->FailedSteps as $scenario_name => $steps )
-            {
-                $total_steps += count( $steps );
-                foreach( $steps as $step_name => $step )
-                {
-                    if( $step->KnownFailure )
-                    {
+        if (!empty($test->FailedSteps)) {
+            foreach ($test->FailedSteps as $scenario_name => $steps) {
+                $total_steps += count($steps);
+                foreach ($steps as $step_name => $step) {
+                    if ($step->KnownFailure) {
                         $known_failures++;
                     }
                 }
@@ -106,7 +102,7 @@ TXT;
     private function parse_expected_fails()
     {
         //- Load up the expected fails file
-        if (($handle = fopen("beaht_expected_fails.csv", "r")) !== FALSE) {
+        if (($handle = fopen(dirname(__FILE__) . "/beaht_expected_fails.csv", "r")) !== FALSE) {
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 //- Because there is potential the path separators might be incorrect as the data is put into this file
                 //- by hand so we are going to make sure they match!
@@ -446,8 +442,7 @@ TXT;
         $mail->Body = $email_text;
         $mail->AltBody = "Sorry, no text version available.. here is the HTML version!\n\n" . $email_text;
 
-        if( $test->should_send_email( $test ) && !$mail->send() )
-        {
+        if ($test->should_send_email($test) && !$mail->send()) {
             echo "NORMAL EMAIL - Failed to send email\n";
             print_r($mail);
             echo "\n\n";
@@ -462,8 +457,7 @@ TXT;
             $mail->clearAllRecipients();
             list($name, $email) = explode('<', str_replace('>', '', $this->config_data['fail_email']));
             $mail->addAddress(trim($email), trim($name));
-            if( !$mail->send() )
-            {
+            if (!$mail->send()) {
                 echo "ADMIN EMAIL - Failed to send email\n";
                 print_r($mail);
                 echo "\n\n";

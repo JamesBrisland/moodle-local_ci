@@ -46,6 +46,11 @@ uniq=($(printf "%s\n" "${arr[@]}" | sort -u));
 
 if [[ ${#uniq[@]} > 1  ]]; then
     echo More than one file to be run. Firing off scripts with all params
+
+    for x in "${uniq[@]}"
+    do
+        echo "Firing off process for '$x'"
+    done
 fi
 
 exit 1;

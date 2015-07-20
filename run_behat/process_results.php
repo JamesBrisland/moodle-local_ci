@@ -219,7 +219,6 @@ TXT;
         //- We want to change it to
         //- mod-quiz-tests-behat-settings_form_fields_disableif.xml
         $gitdir_with_slashes_replaced = str_replace(DIRECTORY_SEPARATOR, '-', ($this->config_data['gitdir'] . DIRECTORY_SEPARATOR));
-        $gitdir_with_slashes_replaced = "-var-www-html-20150716_210000_283_ouvle_overnight_full-";
         return str_replace('TEST' . $gitdir_with_slashes_replaced, '', $file_info->getFilename());
     }
 
@@ -503,7 +502,6 @@ TXT;
             $pos_from_back = mb_strlen($match) - $feature_pos;
 
             $path = $this->config_data['gitdir'] . DIRECTORY_SEPARATOR;
-            $path = '/var/www/html/20150716_210000_283_ouvle_overnight_full/';
             $len_path = mb_strlen($path);
             $start_feature_path = mb_strrpos($match, $path, -$pos_from_back);
 

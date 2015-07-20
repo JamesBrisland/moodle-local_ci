@@ -170,6 +170,12 @@ TXT;
                 $this->failed_tests[$test->Path] = $test;
             }
         }
+
+        if( empty( $this->failed_tests ) )
+        {
+            echo "No failed tests found.\n";
+            exit;
+        }
     }
 
     private function get_failures(DirectoryIterator $file_info)

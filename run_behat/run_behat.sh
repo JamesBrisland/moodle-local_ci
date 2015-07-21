@@ -18,7 +18,6 @@ if [[ $adhoc_run_behat != "yes" && "$JOB_NAME" =~ $regex ]]; then
     echo "This is an adhoc job but behat has not been marked to run. Exiting and skipping to next job in chain."
     exit
 fi
-exit
 
 # Grab the display number removing the : from the front
 display_number=${DISPLAY/:/}

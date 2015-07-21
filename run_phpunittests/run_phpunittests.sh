@@ -31,7 +31,6 @@ if [[ $adhoc_run_phpunit != "yes" && "$JOB_NAME" =~ $regex ]]; then
     echo "This is an adhoc job but phpunit has not been marked to run. Exiting and skipping to next job in chain."
     exit
 fi
-exit
 
 # file to capture execution output
 mkdir "${WORKSPACE}/${BUILD_NUMBER}"

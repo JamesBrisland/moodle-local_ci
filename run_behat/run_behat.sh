@@ -128,7 +128,7 @@ fi
 # Conditionally
 if [ $exitstatus -eq 0 ]; then
     echo -e "\n\n---------------------------------------------------------------\n\n"
-    echo Datadir in ${datadirbehat}
+    echo Behat Datadir in ${datadirbehat}
     echo Behat init output: ${behat_init_output}
     echo Behat pretty output: ${behat_pretty_output}
     echo Selenium Hub output: ${selenium_hub_output}
@@ -241,20 +241,19 @@ fi
 echo "Moving screenshots / html"
 mkdir "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 find "${behatfaildump}" -exec cp -p {} "${WORKSPACE}/${BUILD_NUMBER}/screenshots" \;
-cp ${config_file_path} "${WORKSPACE}/${BUILD_NUMBER}/config"
-cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}"
+cp ${config_file_path} "${WORKSPACE}/${BUILD_NUMBER}/behat_bash_config"
+cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}/behat_config.php"
 cp "${datadirbehat}/behat/behat.yml" "${WORKSPACE}/${BUILD_NUMBER}"
 chmod -R 775 "${WORKSPACE}/${BUILD_NUMBER}/screenshots"
 
 echo "Processing results"
-php /var/lib/jenkins/git_repositories/ci_scripts/run_behat/process_results.php -w="${WORKSPACE}/${BUILD_NUMBER}"
+php /var/lib/jenkins/git_repositories/ci_scripts/run_behat/process_results.php -w="${WORKSPACE}/${BUILD_NUMBER}" -t=behat
 
 echo "Cleanup"
-rm -Rf ${gitdir}
-rm -f ${config_file_path}
-rm -fr ${datadir}
-rm -fr ${datadirbehat}
+rm -f ${gitdir}/config.php
 rm -fr ${behatfaildump}
+rm -fr ${datadirbehat}
+rm -fr ${datadir}
 
 # If arrived here, return the exitstatus of the php execution
 exit $exitstatus

@@ -60,6 +60,9 @@ class BehatStep
 
 class ProcessResults
 {
+    CONST PROCESS_BEHAT = 1;
+    CONST PROCESS_PHPUNIT = 2;
+
     private $workspace_path;
     /** @var  BehatTest[] */
     private $failed_tests;
@@ -68,6 +71,7 @@ class ProcessResults
     private $job_name_path;
     private $gitdir;
     private $screenshots_at_time;
+    private $process_type;
     const EMAIL_TEMPLATE_TEXT = <<<TXT
 [JOB_NAME] - Failed Test - [TEST_PATH].<br/>
 <br/>
@@ -171,8 +175,7 @@ TXT;
             }
         }
 
-        if( empty( $this->failed_tests ) )
-        {
+        if (empty($this->failed_tests)) {
             echo "No failed tests found.\n";
             exit;
         }
@@ -313,13 +316,27 @@ TXT;
 
     private function process_command_line_options()
     {
-        $shortops = "w::";
-        $longops = array("workspace::");
+        $shortops = "w::t::";
+        $longops = array('workspace::', 'type::');
         $options = getopt($shortops, $longops);
 
         if (empty($options['w']) && empty($options['workspace'])) {
             throw new Exception('No workspace path passed to script');
+        } else if (empty($options['t']) && empty($options['type'])) {
+            throw new Exception('No type passed to script');
         } else {
+            $type = !empty($options['type']) ? $options['type'] : $options['t'];
+            switch ($type) {
+                case 'behat':
+                    $this->process_type = self::PROCESS_BEHAT;
+                    break;
+                case 'phpunit':
+                    $this->process_type = self::PROCESS_PHPUNIT;
+                    break;
+                default:
+                    throw new Exception('Unknown processing type specified: ' . $type . '. Allowed options are behat or phpunit');
+                    break;
+            }
             $this->workspace_path = !empty($options['workspace']) ? $options['workspace'] : $options['w'];
         }
     }
@@ -331,7 +348,19 @@ TXT;
         }
         //- Grab the vars from the config file - we are hackily suppressing errors as I know there will be some in the file
         //- as it's not actually an ini file, but it's close enough for us to extract the data we need
-        $this->config_data = @parse_ini_file($this->workspace_path . DIRECTORY_SEPARATOR . 'config');
+        $config = '';
+        switch ($this->process_type) {
+            case self::PROCESS_BEHAT:
+                $config = 'behat_bash_config';
+                break;
+            case self::PROCESS_PHPUNIT:
+                $config = 'phpunit_bash_config';
+                break;
+            default:
+                throw new Exception('No processing type specified');
+                break;
+        }
+        $this->config_data = @parse_ini_file($this->workspace_path . DIRECTORY_SEPARATOR . $config);
 
         if (empty($this->config_data)) {
             throw new Exception('No config data set');

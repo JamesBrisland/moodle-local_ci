@@ -33,9 +33,9 @@ resultfile=${WORKSPACE}/${BUILD_NUMBER}/run_phpunittests.xml
 
 # calculate some variables
 mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-installdb=ci_phpunit_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
-datadir=/tmp/ci_dataroot_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
-datadirphpunit=/tmp/ci_dataroot_phpunit_${BUILD_NUMBER}_${EXECUTOR_NUMBER}
+installdb=ci_behat_${setup_build_start_time}_${unique_job_ident}
+datadirphpunit=${datadir}/${setup_build_start_time}_${unique_job_ident}_moodledata_phpunit
+datadir=${datadir}/${setup_build_start_time}_${unique_job_ident}_moodledata
 
 # prepare the composer stuff needed to run this job
 . ${mydir}/../prepare_composer_stuff/prepare_composer_stuff.sh
@@ -67,7 +67,6 @@ fi
 # Do the moodle install
 cd $gitdir && git reset --hard $gitbranch
 rm -fr config.php
-rm -fr ${resultfile}
 
 # To execute the phpunit tests we don't need a real site installed, just the phpunit-prefixed one.
 # For now we are using one template config.php containing all the required vars and then we run the init shell script
@@ -96,8 +95,8 @@ text=$( echo "${text}" | perl -0pe "s!%%EXTRACONFIG%%!${extraconfig}!g" )
 echo "${text}" > ${gitdir}/config.php
 
 # Create the moodledata dir
-mkdir ${datadir}
-mkdir ${datadirphpunit}
+mkdir -p ${datadir}
+mkdir -p ${datadirphpunit}
 
 # Run the phpunit init script
 ${phpcmd} ${gitdir}/admin/tool/phpunit/cli/util.php --install
@@ -227,8 +226,10 @@ else
     echo "Error: Incorrect dbtype=${dbtype}"
     exit 1
 fi
+
+cp ${config_file_path} "${WORKSPACE}/${BUILD_NUMBER}/phpunit_bash_config"
+cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}/phpunit_config.php"
 rm -fr config.php
-rm -fr $gitdir/local/ci
 rm -fr ${datadir}
 rm -fr ${datadirphpunit}
 

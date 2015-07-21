@@ -27,8 +27,8 @@ config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_sta
 
 regex="^.*[Aa]d(-)?[Hh]oc.*$"
 # Check if we are running an adhoc job. If we are check if we want to run behat. If not just exit as success
-if [[ $adhoc_run_behat != "yes" && "$JOB_NAME" =~ $regex ]]; then
-    echo "This is an adhoc job but behat has not been marked to run. Exiting and skipping to next job in chain."
+if [[ $adhoc_run_phpunit != "yes" && "$JOB_NAME" =~ $regex ]]; then
+    echo "This is an adhoc job but phpunit has not been marked to run. Exiting and skipping to next job in chain."
     exit
 fi
 exit

@@ -12,6 +12,13 @@ echo "Display: ${DISPLAY}"
 config_file_path=${JENKINS_HOME}/git_repositories/config_files/${setup_build_start_time}_${unique_job_ident}
 . ${config_file_path}
 
+# Check if we are running an adhoc job. If we are check if we want to run behat. If not just exit as success
+if [[ $adhoc_run_behat != "yes" && $JOB_NAME =~ "^.*[Aa]d(-)?[Hh]oc.*$" ]]; then
+    echo "This is an adhoc job but behat has not been marked to run. Exiting and skipping to next job in chain."
+    exit
+fi
+exit
+
 # Grab the display number removing the : from the front
 display_number=${DISPLAY/:/}
 

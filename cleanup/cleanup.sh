@@ -12,5 +12,5 @@ echo "Unique Job ID: ${unique_job_ident}"
 echo "Setup build start time: ${setup_build_start_time}"
 
 echo "Cleanup"
-rm -Rf ${gitdir}
-rm -f ${config_file_path}
+echo "rm -Rf ${gitdir}"
+echo "rm -f ${config_file_path}"

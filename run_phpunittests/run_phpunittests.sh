@@ -236,6 +236,7 @@ fi
 
 cp ${config_file_path} "${WORKSPACE}/${BUILD_NUMBER}/phpunit_bash_config"
 cp ${gitdir}/config.php "${WORKSPACE}/${BUILD_NUMBER}/phpunit_config.php"
+cp ${gitdir}/phpunit.xml "${WORKSPACE}/${BUILD_NUMBER}"
 rm -fr config.php
 rm -fr ${datadir}
 rm -fr ${datadirphpunit}

@@ -160,15 +160,16 @@ if [ $exitstatus -eq 0 ]; then
     echo -e "\n\n---------------------------------------------------------------\n\n"
 
     if [ -z $behat_by_files_run ]; then
-        if [ "${behat_do_full_run}" = "yes" ]; then
-            tags=${behat_tags_full_run}
-        else
-            tags=${behat_tags_partial_run}
-        fi
 
         # Check to see if we have an override
         if [ ! -z "${behat_tags_override}" -a "${behat_tags_override}" != " " ]; then
             tags=${behat_tags_override}
+        else
+            if [ "${behat_do_full_run}" = "yes" ]; then
+                tags=${behat_tags_full_run}
+            else
+                tags=${behat_tags_partial_run}
+            fi
         fi
 
         echo -e "====== Executing tags ${tags} ======\n\n"

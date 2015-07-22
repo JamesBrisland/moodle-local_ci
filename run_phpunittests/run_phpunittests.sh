@@ -148,26 +148,26 @@ do
     found=""
     # Skip any existing test defined as ignoretests
     if [[ ${ignoretests} =~ ${existing} ]]; then
-        echo "NOTE: Ignoring ${existing}, not part of core." | tee -a $phpunit_test_coverage_output
+        echo "NOTE: Ignoring ${existing}, not part of core." | tee -a "${phpunit_test_coverage_output}"
         continue
     fi
     for defined in ${definedtests}
     do
         if [[ ${existing} =~ ^${defined}$ ]]; then
-            echo "OK: ${existing} will be executed because there is a matching definition for it." | tee -a $phpunit_test_coverage_output
+            echo "OK: ${existing} will be executed because there is a matching definition for it." | tee -a "${phpunit_test_coverage_output}"
             found="1"
         elif [[ ${existing} =~ ^${defined}/.* ]]; then
-            echo "NOTE: ${existing} will be executed because the ${defined} definition covers it." | tee -a $phpunit_test_coverage_output
+            echo "NOTE: ${existing} will be executed because the ${defined} definition covers it." | tee -a "${phpunit_test_coverage_output}"
             found="1"
         fi
     done
     if [[ -z ${found} ]]; then
         # Last chance to skip, directory does not contain test units (files)
         if [[ -z $(ls ${existing} | grep "_test.php$") ]]; then
-            echo "NOTE: Ignoring ${existing}, does not contain any test unit file." | tee -a $phpunit_test_coverage_output
+            echo "NOTE: Ignoring ${existing}, does not contain any test unit file." | tee -a "${phpunit_test_coverage_output}"
             continue;
         fi
-        echo "ERROR: ${existing} is not matched/covered by any definition in phpunit.xml !" | tee -a $phpunit_test_coverage_output
+        echo "ERROR: ${existing} is not matched/covered by any definition in phpunit.xml !" | tee -a "${phpunit_test_coverage_output}"
         exitstatus=1
     fi
     # Look inside all the test files, counting occurrences of $unittestclasses
@@ -176,7 +176,7 @@ do
     do
         classcount=$(grep -iP " extends *(${unittestclassesregex}) *{" ${existing}/${testfile} | wc -l)
         if [[ ! ${classcount} -eq 1 ]]; then
-            echo "WARNING: ${existing}/${testfile} has incorrect (${classcount}) number of unit test classes." | tee -a $phpunit_test_coverage_output
+            echo "WARNING: ${existing}/${testfile} has incorrect (${classcount}) number of unit test classes." | tee -a "${phpunit_test_coverage_output}"
             if [[ "${multipleclassiserror}" == "yes" ]]; then
                 exitstatus=1
             fi

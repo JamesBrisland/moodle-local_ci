@@ -78,7 +78,7 @@ class ProcessResults
 Test run on branch [BRANCH].<br/>
 <br/>
 Output folder <a href="\\\\vle-auto-test\\behat\\[JOB_PATH]\\[BUILD_NUMBER]">[JOB_PATH]\\[BUILD_NUMBER]</a><br/>
-Screenshot/HTML folder: <a href="\\\\vle-auto-test\\behat\\{JOB_PATH}\\[BUILD_NUMBER]\\screenshots">[JOB_PATH]\\[BUILD_NUMBER]\\screenshots</a><br/>
+Screenshot/HTML folder: <a href="\\\\vle-auto-test\\behat\\[JOB_PATH]\\[BUILD_NUMBER]\\screenshots">[JOB_PATH]\\[BUILD_NUMBER]\\screenshots</a><br/>
 <br/>
 For more details please have a look at the output XML file for this test <a href="\\\\vle-auto-test\\behat\\[JOB_PATH]\\[BUILD_NUMBER]\\behat_junit_xml\\[TEST_XML]">[TEST_PATH]</a><br/>
 <br/>

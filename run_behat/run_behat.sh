@@ -183,8 +183,9 @@ if [ $exitstatus -eq 0 ]; then
     vendor/bin/behat -v --config "${datadirbehat}/behat/behat.yml" --format moodle_progress,moodle_progress,pretty,junit --out=,"${behat_pretty_moodle_output}","${behat_pretty_full_output}","${junit_output_folder}" --profile=chrome ${run_files_or_tags}
     exitstatus=${PIPESTATUS[0]}
     echo -e "\nBehat finished. Exit status ${exitstatus}"
-    echo "Files to re-run: (might be none if everything passed - this is just to make it easier to re-run tests)"
+    echo -e "\n\nFiles to re-run: (might be none if everything passed - this is just to make it easier to re-run tests)"
     grep "\.feature" "${WORKSPACE}/${BUILD_NUMBER}/behat_pretty_moodle.txt" | sed -e "s|^.*# $gitdir\/\(.*\.feature\).*$|\1;|" | uniq | sort
+    echo -e "\n\n"
     popd
 fi
 

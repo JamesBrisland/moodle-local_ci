@@ -258,8 +258,8 @@ TXT;
             exec("cd $this->gitdir && git log -n 1 HEAD $rel_feature_location | grep Author | sed -r 's/Author: //'", $output);
 
             if (empty($output)) {
-                if (!empty($this->config_data['fail_email'])) {
-                    $emails = [$this->config_data['fail_email']];
+                if (!empty($this->config_data['admin_email'])) {
+                    $emails = [$this->config_data['admin_email']];
                 } else {
                     echo "\n\n========\nFound no email address for {$file_info->getFilename()} and no fallback email set. OH NO EMAIL NOT SENT!!!!\n========\n\n";
                 }
@@ -274,8 +274,8 @@ TXT;
         foreach ($emails as $index => $email) {
             if (strpos($email, '@open.ac.uk') === false) {
                 //- This email isn't valid! Replace with the fail email set in config
-                if (!empty($this->config_data['fail_email'])) {
-                    $emails[$index] = $this->config_data['fail_email'];
+                if (!empty($this->config_data['admin_email'])) {
+                    $emails[$index] = $this->config_data['admin_email'];
                 } else {
                     echo "\n\n========\nFound Moodle email address ($email) for {$file_info->getFilename()} and no fallback email set. OH NO EMAIL NOT SENT!!!!\n========\n\n";
                     unset($emails[$index]);
@@ -484,13 +484,13 @@ TXT;
         }
 
         //- Now send the mail to the "admin" including any known failures
-        if (!empty($this->config_data['fail_email'])) {
+        if (!empty($this->config_data['admin_email']) && $this->config_data['send_admin_copy'] == "yes") {
             //- Send an email to the "admin"
             $email_text = $this->process_step_info_for_email($email_text_before_step_process, $test, true);
             $mail->Subject = "ADMIN - " . $email_subject;
             $mail->Body = $email_text;
             $mail->clearAllRecipients();
-            list($name, $email) = explode('<', str_replace('>', '', $this->config_data['fail_email']));
+            list($name, $email) = explode('<', str_replace('>', '', $this->config_data['admin_email']));
             $mail->addAddress(trim($email), trim($name));
             if (!$mail->send()) {
                 echo "ADMIN EMAIL - Failed to send email\n";

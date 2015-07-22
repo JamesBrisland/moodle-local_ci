@@ -175,18 +175,16 @@ if [ $exitstatus -eq 0 ]; then
 
         run_files_or_tags="--tags=${tags}"
     else
-        #- Remove all whitespace and replace with " ${gitdir}"
-
-        behat_by_files_run=${behat_by_files_run// / $gitdir\/}
         run_files_or_tags="${gitdir}/$behat_by_files_run"
     fi
 
     # This will output the moodle_progress format to the console and write moodle_progress, behat pretty and junit formats to files
     pushd ${gitdir}
-    echo "vendor/bin/behat -v --config \"${datadirbehat}/behat/behat.yml\" --format moodle_progress,moodle_progress,pretty,junit --out=,\"${behat_pretty_moodle_output}\",\"${behat_pretty_full_output}\",\"${junit_output_folder}\" --profile=chrome ${run_files_or_tags}"
     vendor/bin/behat -v --config "${datadirbehat}/behat/behat.yml" --format moodle_progress,moodle_progress,pretty,junit --out=,"${behat_pretty_moodle_output}","${behat_pretty_full_output}","${junit_output_folder}" --profile=chrome ${run_files_or_tags}
     exitstatus=${PIPESTATUS[0]}
     echo -e "\nBehat finished. Exit status ${exitstatus}"
+    echo "Files to re-run: (might be none if everything passed!)"
+    grep "\.feature" "${WORKSPACE}/${BUILD_NUMBER}/behat_pretty_moodle.txt" | sed -e "s|^.*# $gitdir\/\(.*\.feature\).*$|\1;|" | uniq | sort
     popd
 fi
 
